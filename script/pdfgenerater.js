@@ -8,7 +8,7 @@ document.addEventListener('click', async function (event) {
   if (!confirm(`Are you sure you want to deactivate user ${userId}?`)) return;
 
   try {
-    const response = await fetch(`http://esyserve.top/user/deactivate/${userId}`, {
+    const response = await fetch(`https://esyserve.top/user/deactivate/${userId}`, {
       method: 'POST',
       credentials: 'include'
     });
@@ -26,7 +26,7 @@ document.addEventListener('click', async function (event) {
 
 (async function fetchAllUsers() {
   try {
-    const response = await fetch('http://esyserve.top/user/all', {
+    const response = await fetch('https://esyserve.top/user/all', {
       method: 'GET',
       credentials: 'include'
     });
