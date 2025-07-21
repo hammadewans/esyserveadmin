@@ -1,6 +1,6 @@
 (async function fetchTemplates() {
   try {
-    const response = await fetch('http://esyserve.top/fetch/template', {
+    const response = await fetch('https://esyserve.top/fetch/template', {
       credentials: 'include',
       method: 'GET'
     });
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function fetchTeachers(userid) {
     try {
-      const response = await fetch(`http://esyserve.top/fetch/teacher/${userid}`, {
+      const response = await fetch(`https://esyserve.top/fetch/teacher/${userid}`, {
         credentials: 'include',
         method: 'GET'
       });
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
     selectedTeacherIds.forEach(id => formData.append('teacherids[]', id));
 
     try {
-      const response = await fetch('http://esyserve.top/teacher/pdf', {
+      const response = await fetch('https://esyserve.top/teacher/pdf', {
         method: 'POST',
         body: formData,
         credentials: 'include'
