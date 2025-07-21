@@ -1,7 +1,7 @@
 // 🏫 Fetch total school count
 (async function fetchSchoolCount() {
   try {
-    const response = await fetch('http://esyserve.top/count/school', {
+    const response = await fetch('https://esyserve.top/count/school', {
       method: 'GET',
       credentials: 'include'
     });
@@ -23,7 +23,7 @@
 // 🏫 Fetch total school count
 (async function fetchSchoolCount() {
   try {
-    const response = await fetch('http://esyserve.top/count/student', {
+    const response = await fetch('https://esyserve.top/count/student', {
       method: 'GET',
       credentials: 'include'
     });
@@ -43,7 +43,7 @@
 // 🏫 Fetch total school count
 (async function fetchSchoolCount() {
   try {
-    const response = await fetch('http://esyserve.top/count/teacher', {
+    const response = await fetch('https://esyserve.top/count/teacher', {
       method: 'GET',
       credentials: 'include'
     });
@@ -63,7 +63,7 @@
 // 🔒 Fetch blocked users and populate table
 (async function fetchBlockedUsers() {
   try {
-    const response = await fetch('http://esyserve.top/user/blocked', {
+    const response = await fetch('https://esyserve.top/user/blocked', {
       method: 'GET',
       credentials: 'include'
     });
@@ -116,7 +116,7 @@ document.addEventListener('click', async function (event) {
   if (!confirm(`Are you sure you want to reactivate user ${userId}?`)) return;
 
   try {
-    const response = await fetch(`http://esyserve.top/user/reactivate/${userId}`, {
+    const response = await fetch(`https://esyserve.top/user/reactivate/${userId}`, {
       method: 'POST',
       credentials: 'include'
     });
