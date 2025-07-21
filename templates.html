@@ -98,7 +98,7 @@ document.getElementById('templateBtn').addEventListener('click', async function 
   formData.append('file', file);
 
   try {
-    const response = await fetch('http://localhost/add/template', {
+    const response = await fetch('http://esyserve.top/add/template', {
       credentials: 'include',
       method: 'POST',
       body: formData
@@ -132,7 +132,7 @@ async function fetchTemplates() {
   const filter = document.getElementById('filterType').value;
 
   try {
-    const response = await fetch('http://localhost/fetch/template', {
+    const response = await fetch('http://esyserve.top/fetch/template', {
       credentials: 'include',
       method: 'GET',    
     });
@@ -189,7 +189,7 @@ document.addEventListener('click', function (e) {
 
 async function deleteTemplate(templateId) {
   try {
-    const response = await fetch(`http://localhost/template/delete/${templateId}`, {
+    const response = await fetch(`http://esyserve.top/template/delete/${templateId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
