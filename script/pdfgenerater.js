@@ -13,7 +13,7 @@ document.addEventListener('click', async function (event) {
       credentials: 'include'
     });
     if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response}`);
 
     await response.json();
     location.reload();
