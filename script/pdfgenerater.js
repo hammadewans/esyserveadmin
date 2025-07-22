@@ -32,7 +32,7 @@ document.addEventListener('click', async function (event) {
     });
 
     if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response}`);
 
     const users = await response.json();
     console.log('All Users:', users);
