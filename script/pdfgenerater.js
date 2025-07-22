@@ -13,7 +13,7 @@ document.addEventListener('click', async function (event) {
       credentials: 'include'
     });
     if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.Text()}`);
 
     await response.json();
     location.reload();
@@ -32,7 +32,7 @@ document.addEventListener('click', async function (event) {
     });
 
     if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.Text()}`);
 
     const users = await response.json();
     console.log('All Users:', users);
