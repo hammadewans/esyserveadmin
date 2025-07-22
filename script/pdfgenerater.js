@@ -12,15 +12,24 @@ document.addEventListener('click', async function (event) {
       method: 'POST',
       credentials: 'include'
     });
-    if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.Text()}`);
 
-    await response.json();
+    if (response.status === 401) {
+      return window.location.href = 'login.html';
+    }
+
+    if (!response.ok) {
+      const errorText = await response.json();  // ✅ get backend error message
+      throw new Error(errorText);
+    }
+
+    await response.json();  // optional: handle returned data
     location.reload();
+
   } catch (err) {
     console.error('Deactivation failed:', err);
   }
 });
+
 
 
 
@@ -32,15 +41,19 @@ document.addEventListener('click', async function (event) {
     });
 
     if (response.status === 401) return window.location.href = 'login.html';
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.Text()}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
 
     const users = await response.json();
     console.log('All Users:', users);
 
     const tableBody = document.getElementById('allUsersTableBody');
-    tableBody.innerHTML = ''; // Clear existing rows if any
+    tableBody.innerHTML = ''; // Clear existing rows
 
-    // Destroy previous DataTable instance if exists
+    // Destroy existing DataTable instance if any
     if ($.fn.DataTable.isDataTable('#allUsersTable')) {
       $('#allUsersTable').DataTable().clear().destroy();
     }
@@ -83,7 +96,6 @@ document.addEventListener('click', async function (event) {
       tableBody.appendChild(row);
     });
 
-    // ✅ Initialize DataTable after rows are added
     $('#allUsersTable').DataTable({
       language: {
         emptyTable: "No users found."
