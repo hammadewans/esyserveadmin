@@ -53,7 +53,9 @@
         if (response.ok) {
           window.location.href = 'index.html';
         } else {
-          alert(error.message || 'Login failed. Please check your credentials.');
+          const error = await response.json();
+          alert('Login failed. Please check your credentials.');
+          console.error(error);
         }
       } catch (err) {
         alert('Network error. Please try again later.');
