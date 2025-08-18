@@ -65,7 +65,12 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($.fn.DataTable.isDataTable('#studentTable')) {
         $('#studentTable').DataTable().clear().destroy();
       }
-      $('#studentTable').DataTable();
+      
+      $('#studentTable').DataTable({
+        pageLength: 10, // default page length
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 100, "All"]] // add "All" option
+      });
+
 
     } catch (error) {
       console.error('Fetch error:', error);
@@ -153,4 +158,5 @@ document.write(html);
       alert('Failed to generate PDF.');
     }
   });
+
 });
