@@ -65,12 +65,12 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($.fn.DataTable.isDataTable('#studentTable')) {
         $('#studentTable').DataTable().clear().destroy();
       }
-      
-      $('#studentTable').DataTable({
-        pageLength: 10, // default page length
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 100, "All"]] // add "All" option
-      });
 
+      // ✅ DataTable with "Show All" option
+      $('#studentTable').DataTable({
+        pageLength: 10, // change to -1 if you want "All" by default
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+      });
 
     } catch (error) {
       console.error('Fetch error:', error);
@@ -80,11 +80,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchStudents(userid);
 
+  // Select all checkbox logic
   document.getElementById('selectAll').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
+  // Send selected students for PDF generation
   document.getElementById('sendSelected').addEventListener('click', async () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
@@ -110,48 +112,47 @@ document.addEventListener('DOMContentLoaded', function () {
         body: formData,
         credentials: 'include'
       });
-const result = await response.json(); // array of HTML card strings
-if (!response.ok || !Array.isArray(result)) {
-  throw new Error('Invalid response from server');
-}
 
-let html = `
-  <html>
-    <head>
-      <style>
-        .row {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 10mm;
+      const result = await response.json(); // array of HTML card strings
+      if (!response.ok || !Array.isArray(result)) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Build printable HTML
+      let html = `
+        <html>
+          <head>
+            <style>
+              .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10mm;
+              }
+              .card {
+                width: 85.60mm;
+                height: 53.98mm;
+                box-sizing: border-box;
+              }
+            </style>
+          </head>
+          <body>
+      `;
+
+      for (let i = 0; i < result.length; i += 3) {
+        html += '<div class="row">';
+        for (let j = i; j < i + 3 && j < result.length; j++) {
+          html += `<div class="card">${result[j]}</div>`;
         }
-        .card {
-          width: 85.60mm;
-          height: 53.98mm;
-          box-sizing: border-box;
-        }
-      </style>
-    </head>
-    <body>
-`;
+        html += '</div>';
+      }
 
-for (let i = 0; i < result.length; i += 3) {
-  html += '<div class="row">';
-  for (let j = i; j < i + 3 && j < result.length; j++) {
-    html += `<div class="card">${result[j]}</div>`;
-  }
-  html += '</div>';
-}
+      html += `</body></html>`;
 
-html += `</body></html>`;
-
-document.write(html);
-
-
-
-
-
-
-
+      // ✅ Open in new tab instead of replacing the current page
+      const win = window.open('', '_blank');
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
 
     } catch (error) {
       console.error(error);
