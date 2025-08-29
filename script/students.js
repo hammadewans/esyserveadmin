@@ -128,11 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 justify-content: space-between;
                 margin-bottom: 10mm;
               }
-              .card {
-                width: 85.60mm;
-                height: 53.98mm;
-                box-sizing: border-box;
-              }
             </style>
           </head>
           <body>
@@ -161,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
 
