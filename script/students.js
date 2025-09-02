@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // ✅ DataTable with "Show All" option
       $('#studentTable').DataTable({
         pageLength: 90,
-        lengthMenu: [[90, 180, -1], ["Basic", "Advance", "All"]]
+        lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
       });
 
     } catch (error) {
@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
 
