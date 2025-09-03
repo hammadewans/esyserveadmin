@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-  // Send selected students for PDF generation
+  // Send selected students for template rendering with lazy loading
   document.getElementById('sendSelected').addEventListener('click', async () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
@@ -102,63 +102,91 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('templateid', templateId);
-    selectedStudentIds.forEach(id => formData.append('studentids[]', id));
+    // ✅ Pagination setup
+    const limit = 18;   // 18 cards per request
+    let offset = 0;
+    let total = selectedStudentIds.length;
+    let loading = false;
 
-    try {
-      const response = await fetch('https://esyserve.top/school/pdf', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+    // Open new tab for output
+    const win = window.open('', '_blank');
+    win.document.open();
+    win.document.write(`
+      <html>
+        <head>
+          <style>
+            .row { display: flex; justify-content: space-between; margin-bottom: 10mm; }
+            .card { margin: 0 5px; }
+            #loading { text-align:center; padding:10px; font-family:sans-serif; }
+          </style>
+        </head>
+        <body>
+          <div id="cardsContainer"></div>
+          <div id="loading">Loading...</div>
+        </body>
+      </html>
+    `);
+    win.document.close();
 
-      const result = await response.json(); // array of HTML card strings
-      if (!response.ok || !Array.isArray(result)) {
-        throw new Error('Invalid response from server');
+    async function loadBatch() {
+      if (loading) return;
+      if (offset >= total) {
+        win.document.getElementById('loading').innerText = 'All cards loaded ✅';
+        return;
       }
 
-      // Build printable HTML
-      let html = `
-        <html>
-          <head>
-            <style>
-              .row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10mm;
-              }
-            </style>
-          </head>
-          <body>
-      `;
+      loading = true;
+      const batchIds = selectedStudentIds.slice(offset, offset + limit);
+      const formData = new FormData();
+      formData.append('templateid', templateId);
+      batchIds.forEach(id => formData.append('studentids[]', id));
 
-      for (let i = 0; i < result.length; i += 3) {
-        html += '<div class="row">';
-        for (let j = i; j < i + 3 && j < result.length; j++) {
-          html += `<div class="card">${result[j]}</div>`;
+      try {
+        const response = await fetch('https://esyserve.top/school/pdf', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (!response.ok || !Array.isArray(result)) {
+          throw new Error('Invalid response from server');
         }
-        html += '</div>';
+
+        // Append batch cards into rows of 3
+        let html = '';
+        for (let i = 0; i < result.length; i += 3) {
+          html += '<div class="row">';
+          for (let j = i; j < i + 3 && j < result.length; j++) {
+            html += `<div class="card">${result[j]}</div>`;
+          }
+          html += '</div>';
+        }
+
+        win.document.getElementById('cardsContainer')
+          .insertAdjacentHTML('beforeend', html);
+
+        offset += limit;
+        loading = false;
+
+      } catch (error) {
+        console.error(error);
+        win.document.getElementById('loading').innerText = 'Error loading cards ❌';
       }
-
-      html += `</body></html>`;
-
-      // ✅ Open in new tab instead of replacing the current page
-      const win = window.open('', '_blank');
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-
-    } catch (error) {
-      console.error(error);
-      alert('Failed to generate PDF.');
     }
+
+    // Lazy load on scroll
+    win.addEventListener('scroll', () => {
+      const nearBottom =
+        win.innerHeight + win.scrollY >= win.document.body.offsetHeight - 200;
+
+      if (nearBottom) {
+        loadBatch();
+      }
+    });
+
+    // First batch load
+    loadBatch();
   });
 
 });
-
-
-
-
-
-
