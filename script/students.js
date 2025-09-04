@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadBatch() {
       if (loading) return;
       if (offset >= total) {
-        win.document.getElementById('loading').innerText = ;
+        win.document.getElementById('loading').innerText = "All Cards Loaded";
         return;
       }
 
@@ -190,4 +190,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
