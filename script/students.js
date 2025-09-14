@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <td>${student.student || ''}</td>
           <td>${student.class || ''}</td>
           <td>${student.sectionclass || ''}</td>
-          <td><img src="${student.imgstudent || ''}" alt="Student" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td><img src="assets/img/${student.imgstudent || ''}" alt="Student" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
         `;
         tableBody.appendChild(row);
       });
@@ -190,5 +190,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
