@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <style>
             @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; }
+            body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
             .page {
               width: 210mm;
               height: 297mm;
@@ -124,12 +124,13 @@ document.addEventListener('DOMContentLoaded', function () {
               flex-wrap: wrap;
               box-sizing: border-box;
               page-break-after: always;
+              justify-content: center;
+              align-content: center;
             }
             .card {
               width: 105mm;
               height: 59.4mm;
               box-sizing: border-box;
-              border: 1px solid #ddd;
               display: flex;
               align-items: center;
               justify-content: center;
