@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <style>
             .row { display: flex; justify-content: space-between; margin-bottom: 10mm; }
-            .card { margin: 0 5px; }
+            .card { flex: 0 0 48%; margin: 0 5px; }
             #loading { text-align:center; padding:10px; font-family:sans-serif; }
           </style>
         </head>
@@ -153,11 +153,11 @@ document.addEventListener('DOMContentLoaded', function () {
           throw new Error('Invalid response from server');
         }
 
-        // Append batch cards into rows of 3
+        // ✅ Append batch cards into rows of 2
         let html = '';
-        for (let i = 0; i < result.length; i += 3) {
+        for (let i = 0; i < result.length; i += 2) {
           html += '<div class="row">';
-          for (let j = i; j < i + 3 && j < result.length; j++) {
+          for (let j = i; j < i + 2 && j < result.length; j++) {
             html += `<div class="card">${result[j]}</div>`;
           }
           html += '</div>';
@@ -190,7 +190,3 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
-
-
-
-
