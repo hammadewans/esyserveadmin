@@ -116,7 +116,14 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <style>
             @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            #cardsContainer {
+              margin: 0;
+              padding: 0;
+            }
             .page {
               width: 210mm;
               height: 297mm;
@@ -124,8 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
               flex-wrap: wrap;
               box-sizing: border-box;
               page-break-after: always;
-              justify-content: center;
-              align-content: center;
+              justify-content: flex-start;
+              align-content: flex-start;
             }
             .card {
               width: 105mm;
@@ -136,7 +143,14 @@ document.addEventListener('DOMContentLoaded', function () {
               justify-content: center;
               overflow: hidden;
             }
-            #loading { text-align:center; padding:10px; font-family:sans-serif; }
+            .page:last-child {
+              page-break-after: auto;
+            }
+            #loading {
+              text-align: center;
+              padding: 10px;
+              font-family: sans-serif;
+            }
           </style>
         </head>
         <body>
