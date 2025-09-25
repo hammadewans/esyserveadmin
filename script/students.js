@@ -115,9 +115,8 @@ document.addEventListener('DOMContentLoaded', function () {
       <html>
         <head>
           <style>
-            .row { display: flex; justify-content: space-between; margin-bottom: 10mm; }
-            .card { flex: 0 0 48%; margin: 0 5px; }
-            #loading { text-align:center; padding:10px; font-family:sans-serif; }
+            .row { display: flex; justify-content: space-between; }
+           #loading { text-align:center; padding:10px; font-family:sans-serif; }
           </style>
         </head>
         <body>
@@ -190,3 +189,4 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
