@@ -148,11 +148,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('cardsContainer');
             const loadingDiv = document.getElementById('loading');
             let index = 0;
-            const batchSize = 30;
+            const batchSize = 10; // 10 cards per page (2x5)
 
             async function fetchNextBatch() {
               if (index >= selectedStudentIds.length) {
-                loadingDiv.innerText = "All Cards Loaded ✅";
                 return;
               }
 
@@ -168,6 +167,8 @@ document.addEventListener('DOMContentLoaded', function () {
                   credentials: 'include'
                 });
                 const result = await response.json();
+
+                // Append all cards in this batch first
                 result.forEach(card => {
                   const wrapper = document.createElement('div');
                   wrapper.className = 'card-wrapper';
@@ -176,7 +177,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 index += batchSize;
-                loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
+
+                // Update loading text: only show "All Cards Loaded" at the very end
+                if (index >= selectedStudentIds.length) {
+                  loadingDiv.innerText = "All Cards Loaded ✅";
+                } else {
+                  loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
+                }
+
               } catch(e) {
                 console.error(e);
                 loadingDiv.innerText = 'Error loading cards ❌';
@@ -200,5 +208,3 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
-
-
