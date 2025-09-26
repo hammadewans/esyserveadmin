@@ -131,17 +131,16 @@ document.addEventListener('DOMContentLoaded', function () {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
               grid-template-rows: repeat(5, 1fr);
-              gap: 5mm 5mm; /* row-gap column-gap */
+              gap: 5mm 1mm; /* row-gap column-gap */
               box-sizing: border-box;
               page-break-after: always;
-              padding: 5mm;
+              padding: 0;
             }
             .card {
               border: 1px solid #ccc;
               display: flex;
               justify-content: center;
               align-items: center;
-              overflow: hidden;
             }
             .page:last-child {
               page-break-after: auto;
@@ -224,3 +223,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
