@@ -113,48 +113,72 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <meta charset="UTF-8">
           <title>Cards Preview</title>
-         <style>
-          @page { size: A4; margin: 0; }
-          body { margin: 0; padding: 0; }
-          #cardsContainer { margin: 0; padding: 0; }
-          
-          .page {
+          <style>
+            @page { size: A4; margin: 0; }
+            body {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            #cardsContainer {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+        
+            /* Page grid: 2 columns x 5 rows with custom gaps */
+            .page {
               width: 210mm;
               height: 297mm;
               display: grid;
               grid-template-columns: repeat(2, 1fr); /* 2 columns */
               grid-template-rows: repeat(5, 1fr);    /* 5 rows */
-              column-gap: 0; /* remove column gap */
-              row-gap: 0;    /* remove row gap */
-              justify-content: stretch; /* stretch horizontally */
-              align-content: stretch;   /* stretch vertically */
+              column-gap: 10mm; /* gap between columns */
+              row-gap: 2mm;     /* gap between rows */
+              justify-items: stretch;
+              align-items: stretch;
               box-sizing: border-box;
               page-break-after: always;
-          }
-          
-          .card {
-              width: 100%;  /* take full column width */
-              height: 100%; /* take full row height */
+              margin: 0;
+              padding: 0;
+            }
+        
+            /* Card container inside page */
+            .card {
+              width: 100% !important;
+              height: 100% !important;
               display: flex;
-              align-items: center;
               justify-content: center;
-              overflow: hidden;
-              margin: 0;    /* remove margin */
-              padding: 0;   /* remove padding */
+              align-items: center;
+              margin: 0 !important;
+              padding: 0 !important;
               box-sizing: border-box;
-          }
-          
-          .page:last-child { page-break-after: auto; }
-          #loading { text-align: center; padding: 10px; font-family: sans-serif; }
-
-
+              overflow: hidden;
+            }
+        
+            /* Make sure inner template content fills card */
+            .card > div {
+              width: 100%;
+              height: 100%;
+              margin: 0 !important;
+              padding: 0 !important;
+              box-sizing: border-box;
+            }
+        
+            .page:last-child { page-break-after: auto; }
+        
+            #loading {
+              text-align: center;
+              padding: 10px;
+              font-family: sans-serif;
+            }
           </style>
         </head>
         <body>
           <div id="cardsContainer"></div>
           <div id="loading">Loading cards...</div>
         </body>
-      </html>
+        </html>
     `);
     win.document.close();
 
@@ -221,5 +245,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
