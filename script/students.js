@@ -1,3 +1,4 @@
+// ------------------ Fetch Templates ------------------
 (async function fetchTemplates() {
   try {
     const response = await fetch('https://esyserve.top/fetch/template', {
@@ -6,7 +7,6 @@
     });
 
     const templates = await response.json();
-
     if (!response.ok) throw new Error(templates || 'Failed to fetch templates.');
 
     const select = document.getElementById('dynamicSelect');
@@ -24,6 +24,7 @@
   }
 })();
 
+// ------------------ On DOM Ready ------------------
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
+  // ------------------ Fetch Students ------------------
   async function fetchStudents(userid) {
     try {
       const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
@@ -55,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
           <td>${student.student || ''}</td>
           <td>${student.class || ''}</td>
           <td>${student.sectionclass || ''}</td>
-          <td><img src="assets/images/${student.imgstudent || ''}" alt="Student" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td><img src="assets/images/${student.imgstudent || ''}" 
+              alt="Student" 
+              style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
         `;
         tableBody.appendChild(row);
       });
@@ -80,13 +84,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchStudents(userid);
 
-  // Select all checkbox logic
+  // ------------------ Select All Checkboxes ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-  // Send selected students for template rendering with lazy loading
+  // ------------------ Send Selected Students ------------------
   document.getElementById('sendSelected').addEventListener('click', async () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
@@ -102,28 +106,18 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ✅ Pagination setup
-    const limit = 10;   // 10 cards per A4
-    let offset = 0;
-    let total = selectedStudentIds.length;
-    let loading = false;
-
-    // Open new tab for output
-    const win = window.open('', '_blank');
+    // ✅ Open blank new tab for output
+    const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
       <html>
         <head>
+          <meta charset="UTF-8">
+          <title>Cards Preview</title>
           <style>
             @page { size: A4; margin: 0; }
-            body {
-              margin: 0;
-              padding: 0;
-            }
-            #cardsContainer {
-              margin: 0;
-              padding: 0;
-            }
+            body { margin: 0; padding: 0; }
+            #cardsContainer { margin: 0; padding: 0; }
             .page {
               width: 210mm;
               height: 297mm;
@@ -143,80 +137,52 @@ document.addEventListener('DOMContentLoaded', function () {
               justify-content: center;
               overflow: hidden;
             }
-            .page:last-child {
-              page-break-after: auto;
-            }
-            #loading {
-              text-align: center;
-              padding: 10px;
-              font-family: sans-serif;
-            }
+            .page:last-child { page-break-after: auto; }
+            #loading { text-align: center; padding: 10px; font-family: sans-serif; }
           </style>
         </head>
         <body>
           <div id="cardsContainer"></div>
-          <div id="loading">Loading...</div>
+          <div id="loading">Loading all cards...</div>
         </body>
       </html>
     `);
     win.document.close();
 
-    async function loadBatch() {
-      if (loading) return;
-      if (offset >= total) {
-        win.document.getElementById('loading').innerText = "All Cards Loaded";
-        return;
-      }
-
-      loading = true;
-      const batchIds = selectedStudentIds.slice(offset, offset + limit);
+    // ------------------ Fetch All Cards in One Request ------------------
+    try {
       const formData = new FormData();
       formData.append('templateid', templateId);
-      batchIds.forEach(id => formData.append('studentids[]', id));
+      selectedStudentIds.forEach(id => formData.append('studentids[]', id));
 
-      try {
-        const response = await fetch('https://esyserve.top/school/pdf', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
+      const response = await fetch('https://esyserve.top/school/pdf', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
 
-        const result = await response.json();
-        if (!response.ok || !Array.isArray(result)) {
-          throw new Error('Invalid response from server');
-        }
+      const result = await response.json();
+      if (!response.ok || !Array.isArray(result)) {
+        throw new Error('Invalid response from server');
+      }
 
-        // ✅ Make one A4 page with 2×5 layout
-        let html = '<div class="page">';
-        result.forEach(card => {
+      // ✅ Split into A4 pages (10 cards per page → 2×5 layout)
+      let html = '';
+      for (let i = 0; i < result.length; i += 10) {
+        html += '<div class="page">';
+        result.slice(i, i + 10).forEach(card => {
           html += `<div class="card">${card}</div>`;
         });
         html += '</div>';
-
-        win.document.getElementById('cardsContainer')
-          .insertAdjacentHTML('beforeend', html);
-
-        offset += limit;
-        loading = false;
-
-      } catch (error) {
-        console.error(error);
-        win.document.getElementById('loading').innerText = 'Error loading cards ❌';
       }
+
+      win.document.getElementById('cardsContainer').innerHTML = html;
+      win.document.getElementById('loading').innerText = "All Cards Loaded ✅";
+
+    } catch (error) {
+      console.error(error);
+      win.document.getElementById('loading').innerText = 'Error loading cards ❌';
     }
-
-    // Lazy load on scroll
-    win.addEventListener('scroll', () => {
-      const nearBottom =
-        win.innerHeight + win.scrollY >= win.document.body.offsetHeight - 200;
-
-      if (nearBottom) {
-        loadBatch();
-      }
-    });
-
-    // First batch load
-    loadBatch();
   });
 
 });
