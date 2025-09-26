@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#studentTable').DataTable().clear().destroy();
       }
 
-      // ✅ DataTable with "Show All" option
       $('#studentTable').DataTable({
         pageLength: 90,
         lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
@@ -124,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 display: grid;
                 grid-template-columns: repeat(2, 105mm);
                 grid-template-rows: repeat(5, 59.4mm);
-                gap: 0; /* ✅ No gaps between rows or columns */
+                gap: 0;
                 box-sizing: border-box;
                 page-break-after: always;
               }
@@ -132,8 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
               .card {
                 width: 105mm;
                 height: 59.4mm;
-                margin: 0;   /* ✅ Remove any spacing */
-                padding: 0;  /* ✅ No padding between cards */
+                margin: 0;
+                padding: 0;
                 box-sizing: border-box;
                 display: flex;
                 align-items: center;
@@ -146,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </head>
         <body>
           <div id="cardsContainer"></div>
-          <div id="loading">Loading all cards...</div>
+          <div id="loading">Loading cards...</div>
         </body>
       </html>
     `);
@@ -169,41 +168,44 @@ document.addEventListener('DOMContentLoaded', function () {
         throw new Error('Invalid response from server');
       }
 
-      // ------------------ Scroll-based Lazy Loading ------------------
+      // ------------------ Scroll-based Lazy Loading with 18-card batches ------------------
       const container = win.document.getElementById('cardsContainer');
       const loadingDiv = win.document.getElementById('loading');
       let index = 0;
-      const pageSize = 10;
+      const batchSize = 30; // ✅ 18 cards per batch
 
-      function loadNextPage() {
+      function loadNextBatch() {
         if (index >= result.length) {
           loadingDiv.innerText = "All Cards Loaded ✅";
           return;
         }
 
-        const pageCards = result.slice(index, index + pageSize);
-        let html = '<div class="page">';
-        pageCards.forEach(card => {
-          html += `<div class="card">${card}</div>`;
-        });
-        html += '</div>';
-        container.insertAdjacentHTML('beforeend', html);
+        const batchCards = result.slice(index, index + batchSize);
+        let html = '';
+        for (let i = 0; i < batchCards.length; i += 10) {
+          html += '<div class="page">';
+          batchCards.slice(i, i + 10).forEach(card => {
+            html += `<div class="card">${card}</div>`;
+          });
+          html += '</div>';
+        }
 
-        index += pageSize;
+        container.insertAdjacentHTML('beforeend', html);
+        index += batchSize;
         loadingDiv.innerText = `Loaded ${Math.min(index, result.length)} of ${result.length} cards...`;
       }
 
       // Initial load
-      loadNextPage();
+      loadNextBatch();
 
-      // Load more pages when scrolling near bottom
+      // Load next batch on scroll
       win.addEventListener('scroll', () => {
         const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
         const windowHeight = win.innerHeight;
         const scrollHeight = win.document.body.scrollHeight;
 
         if (scrollTop + windowHeight >= scrollHeight - 50) {
-          loadNextPage();
+          loadNextBatch();
         }
       });
 
