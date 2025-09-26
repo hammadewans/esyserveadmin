@@ -119,23 +119,27 @@ document.addEventListener('DOMContentLoaded', function () {
             body { margin: 0; padding: 0; }
             #cardsContainer { margin: 0; padding: 0; }
             .page {
-              width: 210mm;
-              height: 297mm;
-              display: grid;
-              grid-template-columns: repeat(2, 105mm);
-              grid-template-rows: repeat(5, 59.4mm);
-              box-sizing: border-box;
-              page-break-after: always;
-            }
-            .card {
-              width: 105mm;
-              height: 59.4mm;
-              box-sizing: border-box;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
+                width: 210mm;
+                height: 297mm;
+                display: grid;
+                grid-template-columns: repeat(2, 105mm);
+                grid-template-rows: repeat(5, 59.4mm);
+                gap: 0; /* ✅ No gaps between rows or columns */
+                box-sizing: border-box;
+                page-break-after: always;
+              }
+              
+              .card {
+                width: 105mm;
+                height: 59.4mm;
+                margin: 0;   /* ✅ Remove any spacing */
+                padding: 0;  /* ✅ No padding between cards */
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+              }
             .page:last-child { page-break-after: auto; }
             #loading { text-align: center; padding: 10px; font-family: sans-serif; }
           </style>
@@ -185,4 +189,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
