@@ -114,32 +114,32 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <meta charset="UTF-8">
           <title>Cards Preview</title>
-         <style>
+          <style>
             @page { size: A4; margin: 0; }
             body { margin: 0; padding: 0; }
             #cardsContainer { margin: 0; padding: 0; }
             .page {
-                width: 210mm;
-                height: 297mm;
-                display: grid;
-                grid-template-columns: repeat(2, 105mm);
-                grid-template-rows: repeat(5, 59.4mm);
-                gap: 0; /* ✅ No gaps between rows or columns */
-                box-sizing: border-box;
-                page-break-after: always;
-              }
-              
-              .card {
-                width: 105mm;
-                height: 59.4mm;
-                margin: 0;   /* ✅ Remove any spacing */
-                padding: 0;  /* ✅ No padding between cards */
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-              }
+              width: 210mm;
+              height: 297mm;
+              display: grid;
+              grid-template-columns: repeat(2, 105mm);
+              grid-template-rows: repeat(5, 59.38mm); /* ✅ Adjusted to avoid rounding overflow */
+              gap: 0;              /* ✅ No gaps */
+              line-height: 0;      /* ✅ Prevent whitespace gaps */
+              box-sizing: border-box;
+              page-break-after: always;
+            }
+            .card {
+              width: 105mm;
+              height: 59.38mm;
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+            }
             .page:last-child { page-break-after: auto; }
             #loading { text-align: center; padding: 10px; font-family: sans-serif; }
           </style>
@@ -173,14 +173,11 @@ document.addEventListener('DOMContentLoaded', function () {
       let html = '';
       for (let i = 0; i < result.length; i += 10) {
         html += '<div class="page">';
-        result.slice(i, i + 10).forEach(card => {
-          html += `<div class="card">${card}</div>`;
-        });
+        html += result.slice(i, i + 10).map(card => `<div class="card">${card}</div>`).join('');
         html += '</div>';
       }
 
       win.document.getElementById('cardsContainer').innerHTML = html;
-      win.document.getElementById('loading').innerText = "All Cards Loaded ✅";
 
     } catch (error) {
       console.error(error);
@@ -189,5 +186,3 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
-
-
