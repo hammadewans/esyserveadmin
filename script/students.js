@@ -115,17 +115,8 @@ document.addEventListener('DOMContentLoaded', function () {
           <title>Cards Preview</title>
           <style>
             body {
-              margin: 10px;
               padding: 0;
               font-family: sans-serif;
-              display: flex;
-              flex-wrap: wrap;
-              gap: 10px;
-            }
-            .card-wrapper {
-              display: flex;
-              width: calc(50% - 10px); /* 2 cards per row with gap */
-              justify-content: center;
             }
           </style>
         </head>
@@ -194,3 +185,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
