@@ -133,10 +133,10 @@ document.addEventListener('DOMContentLoaded', function () {
               display: grid;
               grid-template-columns: repeat(2, 1fr); /* 2 columns */
               grid-template-rows: repeat(5, 1fr);    /* 5 rows */
-              column-gap: 10mm; /* gap between columns */
-              row-gap: 2mm;     /* gap between rows */
-              justify-items: stretch;
-              align-items: stretch;
+              column-gap:5mm; /* gap between columns */
+              row-gap: 0.5mm;     /* gap between rows */
+              justify-items: center;
+              align-items: center;
               box-sizing: border-box;
               page-break-after: always;
               margin: 0;
@@ -245,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
 
