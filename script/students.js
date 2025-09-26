@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
+  // ------------------ Fetch Students ------------------
   async function fetchStudents(userid) {
     try {
       const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
@@ -82,11 +83,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchStudents(userid);
 
+  // ------------------ Select All Checkboxes ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
+  // ------------------ Send Selected Students ------------------
   document.getElementById('sendSelected').addEventListener('click', () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
