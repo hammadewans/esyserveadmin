@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ✅ Open blank new tab
+    // ✅ Open new window
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -114,32 +114,37 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
+            @page { size: A4; margin: 0; }
             body {
               margin: 0;
-              padding: 20px;
-              box-sizing: border-box;
+              padding: 0;
               font-family: sans-serif;
+              box-sizing: border-box;
             }
-            .newpage {
-              margin-bottom: 40px; /* space between each 10-card block */
+            #cardsContainer {
+              width: 210mm;
+              margin: 0 auto;
             }
-            .row {
-              display: flex;
-              margin-bottom: 10px; /* space between rows */
+            .page {
+              width: 210mm;
+              height: 297mm;
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              grid-template-rows: repeat(5, 1fr);
+              gap: 5mm 5mm; /* row-gap column-gap */
+              box-sizing: border-box;
+              page-break-after: always;
+              padding: 5mm;
             }
             .card {
-              flex: 1; /* 2 cards per row → each takes 50% */
-              margin-right: 10px;
+              border: 1px solid #ccc;
               display: flex;
               justify-content: center;
               align-items: center;
-              border: 1px solid #ccc;
-              height: 150px; /* adjust height */
-              box-sizing: border-box;
               overflow: hidden;
             }
-            .row .card:last-child {
-              margin-right: 0;
+            .page:last-child {
+              page-break-after: auto;
             }
             #loading {
               text-align: center;
@@ -158,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const container = win.document.getElementById('cardsContainer');
     const loadingDiv = win.document.getElementById('loading');
     let index = 0;
-    const batchSize = 30; // load 30 students per request
+    const batchSize = 30; // fetch 30 cards at a time
 
     async function fetchNextBatch() {
       if (index >= selectedStudentIds.length) {
@@ -182,28 +187,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
         if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
 
-        // Render batch: every 10 cards → newpage, every 2 cards → row
+        // Render batch: every 10 cards → new page
         for (let i = 0; i < result.length; i += 10) {
-          const newPage = win.document.createElement('div');
-          newPage.className = 'newpage';
+          const pageDiv = win.document.createElement('div');
+          pageDiv.className = 'page';
           const pageCards = result.slice(i, i + 10);
-
-          for (let j = 0; j < pageCards.length; j += 2) {
-            const row = win.document.createElement('div');
-            row.className = 'row';
-            const rowCards = pageCards.slice(j, j + 2);
-
-            rowCards.forEach(card => {
-              const cardDiv = win.document.createElement('div');
-              cardDiv.className = 'card';
-              cardDiv.innerHTML = card;
-              row.appendChild(cardDiv);
-            });
-
-            newPage.appendChild(row);
-          }
-
-          container.appendChild(newPage);
+          pageCards.forEach(card => {
+            const cardDiv = win.document.createElement('div');
+            cardDiv.className = 'card';
+            cardDiv.innerHTML = card;
+            pageDiv.appendChild(cardDiv);
+          });
+          container.appendChild(pageDiv);
         }
 
         index += batchSize;
@@ -215,10 +210,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // Initial load
     fetchNextBatch();
 
-    // Lazy load on scroll
+    // Lazy load next batch on scroll
     win.addEventListener('scroll', () => {
       const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
       const windowHeight = win.innerHeight;
