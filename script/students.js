@@ -127,45 +127,49 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         
             /* Page grid: 2 columns x 5 rows with custom gaps */
-            .page {
-              width: 210mm;
-              height: 297mm;
-              display: grid;
-              grid-template-columns: repeat(2, 1fr); /* 2 columns */
-              grid-template-rows: repeat(5, 1fr);    /* 5 rows */
-              column-gap:5mm; /* gap between columns */
-              row-gap: 0.5mm;     /* gap between rows */
-              justify-items: center;
-              align-items: center;
-              box-sizing: border-box;
-              page-break-after: always;
-              margin: 0;
-              padding: 0;
-            }
-        
-            /* Card container inside page */
-            .card {
-              width: 100% !important;
-              height: 100% !important;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              margin: 0 !important;
-              padding: 0 !important;
-              box-sizing: border-box;
-              overflow: hidden;
-            }
-        
-            /* Make sure inner template content fills card */
-            .card > div {
-              width: 100%;
-              height: 100%;
-              margin: 0 !important;
-              padding: 0 !important;
-              box-sizing: border-box;
-            }
-        
-            .page:last-child { page-break-after: auto; }
+           /* Page grid: 2 columns x 5 rows with controlled gaps */
+          .page {
+            width: 210mm;
+            height: 297mm;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns */
+            grid-template-rows: repeat(5, 1fr);    /* 5 rows */
+            column-gap: 10mm; /* horizontal gap */
+            row-gap: 2mm;     /* vertical gap */
+            justify-items: stretch; /* stretch cards to fill column */
+            align-items: stretch;   /* stretch cards to fill row */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            page-break-after: always;
+          }
+          
+          /* Each card fills grid cell completely */
+          .card {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transform: scale(1); /* ensure no shrink */
+          }
+          
+          /* Force template content to scale up to fill card */
+          .card > div {
+            width: 100%;
+            height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box;
+          }
+          
+          /* Last page doesn’t force break */
+          .page:last-child { page-break-after: auto; }
+
         
             #loading {
               text-align: center;
@@ -245,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
 
 
