@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ✅ Open blank new tab for output
+    // ✅ Open blank new tab
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -151,68 +151,66 @@ document.addEventListener('DOMContentLoaded', function () {
     `);
     win.document.close();
 
-    // ------------------ Fetch All Cards in One Request ------------------
-    try {
-      const formData = new FormData();
-      formData.append('templateid', templateId);
-      selectedStudentIds.forEach(id => formData.append('studentids[]', id));
+    const container = win.document.getElementById('cardsContainer');
+    const loadingDiv = win.document.getElementById('loading');
+    let index = 0;
+    const batchSize = 30; // ✅ Fetch 30 cards per request
 
-      const response = await fetch('https://esyserve.top/school/pdf', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      const result = await response.json();
-      if (!response.ok || !Array.isArray(result)) {
-        throw new Error('Invalid response from server');
+    async function fetchNextBatch() {
+      if (index >= selectedStudentIds.length) {
+        loadingDiv.innerText = "All Cards Loaded ✅";
+        return;
       }
 
-      // ------------------ Scroll-based Lazy Loading with 18-card batches ------------------
-      const container = win.document.getElementById('cardsContainer');
-      const loadingDiv = win.document.getElementById('loading');
-      let index = 0;
-      const batchSize = 30; // ✅ 18 cards per batch
+      const batchIds = selectedStudentIds.slice(index, index + batchSize);
 
-      function loadNextBatch() {
-        if (index >= result.length) {
-          loadingDiv.innerText = "All Cards Loaded ✅";
-          return;
-        }
+      const formData = new FormData();
+      formData.append('templateid', templateId);
+      batchIds.forEach(id => formData.append('studentids[]', id));
 
-        const batchCards = result.slice(index, index + batchSize);
+      try {
+        const response = await fetch('https://esyserve.top/school/pdf', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
+
+        // Render batch (split into pages of 10 cards each)
         let html = '';
-        for (let i = 0; i < batchCards.length; i += 10) {
+        for (let i = 0; i < result.length; i += 10) {
           html += '<div class="page">';
-          batchCards.slice(i, i + 10).forEach(card => {
+          result.slice(i, i + 10).forEach(card => {
             html += `<div class="card">${card}</div>`;
           });
           html += '</div>';
         }
-
         container.insertAdjacentHTML('beforeend', html);
+
         index += batchSize;
-        loadingDiv.innerText = `Loaded ${Math.min(index, result.length)} of ${result.length} cards...`;
+        loadingDiv.innerText = `Loaded ${Math.min(index, selectedStudentIds.length)} of ${selectedStudentIds.length} cards...`;
+
+      } catch (error) {
+        console.error(error);
+        loadingDiv.innerText = 'Error loading cards ❌';
       }
-
-      // Initial load
-      loadNextBatch();
-
-      // Load next batch on scroll
-      win.addEventListener('scroll', () => {
-        const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
-        const windowHeight = win.innerHeight;
-        const scrollHeight = win.document.body.scrollHeight;
-
-        if (scrollTop + windowHeight >= scrollHeight - 50) {
-          loadNextBatch();
-        }
-      });
-
-    } catch (error) {
-      console.error(error);
-      win.document.getElementById('loading').innerText = 'Error loading cards ❌';
     }
+
+    // Initial load
+    fetchNextBatch();
+
+    // Fetch next batch when scrolling near bottom
+    win.addEventListener('scroll', () => {
+      const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
+      const windowHeight = win.innerHeight;
+      const scrollHeight = win.document.body.scrollHeight;
+
+      if (scrollTop + windowHeight >= scrollHeight - 50) {
+        fetchNextBatch();
+      }
+    });
   });
 
 });
