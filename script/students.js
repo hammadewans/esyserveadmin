@@ -129,18 +129,14 @@ document.addEventListener('DOMContentLoaded', function () {
               width: 210mm;
               height: 297mm;
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              grid-template-rows: repeat(5, 1fr);
-              gap: 5mm 1mm; /* row-gap column-gap */
+              grid-template-columns: repeat(2, auto);
+              grid-template-rows: repeat(5, auto);
+              gap: 5mm 5mm; /* row-gap column-gap */
               box-sizing: border-box;
               page-break-after: always;
-              padding: 0;
-            }
-            .card {
-              border: 1px solid #ccc;
-              display: flex;
-              justify-content: center;
-              align-items: center;
+              padding: 5mm;
+              justify-content: start;
+              align-content: start;
             }
             .page:last-child {
               page-break-after: auto;
@@ -193,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const pageCards = result.slice(i, i + 10);
           pageCards.forEach(card => {
             const cardDiv = win.document.createElement('div');
-            cardDiv.className = 'card';
+            // No fixed width/height: use template default size
             cardDiv.innerHTML = card;
             pageDiv.appendChild(cardDiv);
           });
@@ -223,4 +219,3 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
-
