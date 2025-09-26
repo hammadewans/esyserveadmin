@@ -14,7 +14,7 @@
       if (template.type === 'students') {
         const option = document.createElement('option');
         option.value = template.templateid;
-        option.textContent = `Template #${template.templateid} - ${template.type}`;
+        option.textContent = `Template #${template.templateid}`;
         select.appendChild(option);
       }
     });
@@ -28,11 +28,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
-
-  if (!userid) {
-    alert("User ID not found in URL");
-    return;
-  }
+  if (!userid) return alert("User ID not found in URL");
 
   // ------------------ Fetch Students ------------------
   async function fetchStudents(userid) {
@@ -41,156 +37,79 @@ document.addEventListener('DOMContentLoaded', function () {
         credentials: 'include',
         method: 'GET'
       });
-
       const students = await response.json();
       if (!response.ok || !Array.isArray(students)) throw new Error('Failed to fetch students.');
 
-      const tableBody = document.querySelector('#studentTable tbody');
       const container = document.getElementById('studentResultContainer');
-      tableBody.innerHTML = '';
-
-      students.forEach(student => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><input type="checkbox" class="student-checkbox" value="${student.studentid}"></td>
-          <td>${student.studentid || ''}</td>
-          <td>${student.student || ''}</td>
-          <td>${student.class || ''}</td>
-          <td>${student.sectionclass || ''}</td>
-          <td><img src="assets/images/${student.imgstudent || ''}" 
-              alt="Student" 
-              style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
-        `;
-        tableBody.appendChild(row);
-      });
-
+      container.innerHTML = students.map(student => `
+        <div style="display:flex; align-items:center; margin:5px 0;">
+          <input type="checkbox" class="student-checkbox" value="${student.studentid}">
+          <img src="assets/images/${student.imgstudent || ''}" alt="Student" style="height:50px;width:50px;border-radius:6px;margin:0 10px;">
+          <span>${student.student || ''} (${student.class || ''} - ${student.sectionclass || ''})</span>
+        </div>
+      `).join('');
       container.style.display = 'block';
-
-      if ($.fn.DataTable.isDataTable('#studentTable')) {
-        $('#studentTable').DataTable().clear().destroy();
-      }
-
-      $('#studentTable').DataTable({
-        pageLength: 90,
-        lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
-      });
 
     } catch (error) {
       console.error('Fetch error:', error);
       alert('Unable to fetch student data.');
     }
   }
-
   fetchStudents(userid);
 
   // ------------------ Select All Checkboxes ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
-    const checkboxes = document.querySelectorAll('.student-checkbox');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+    document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = this.checked);
   });
 
-  // ------------------ Send Selected Students ------------------
+  // ------------------ Show Cards ------------------
   document.getElementById('sendSelected').addEventListener('click', async () => {
-    const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
-    const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
+    const selectedIds = Array.from(document.querySelectorAll('.student-checkbox:checked')).map(cb => cb.value);
     const templateId = document.getElementById('dynamicSelect').value;
 
-    if (!templateId) {
-      alert('Please select a template.');
-      return;
-    }
+    if (!templateId) return alert('Please select a template.');
+    if (!selectedIds.length) return alert('Please select at least one student.');
 
-    if (selectedStudentIds.length === 0) {
-      alert('Please select at least one student.');
-      return;
-    }
-
-    // ✅ Open new window
-    const win = window.open('about:blank', '_blank');
-    win.document.open();
+    const win = window.open('', '_blank');
     win.document.write(`
       <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Cards Preview</title>
-          <style>
-            body {
-              margin: 10px;
-              padding: 0;
-              font-family: sans-serif;
-              display: flex;
-              flex-wrap: wrap;
-              gap: 10px;
-            }
-            .card-wrapper {
-              display: flex;
-              width: calc(50% - 10px); /* 2 cards per row with gap */
-              justify-content: center;
-            }
-          </style>
-        </head>
-        <body>
-          <div id="cardsContainer"></div>
-          <div id="loading">Loading cards...</div>
-        </body>
+      <head>
+        <meta charset="UTF-8">
+        <title>Cards Preview</title>
+        <style>
+          body { font-family:sans-serif; padding:10px; display:flex; flex-wrap:wrap; gap:10px; }
+          .card-wrapper { border:1px solid #ccc; border-radius:6px; padding:10px; width:180px; text-align:center; }
+          .card-wrapper img { width:100%; height:auto; border-radius:6px; }
+        </style>
+      </head>
+      <body>
+        <div id="cardsContainer">Loading cards...</div>
+      </body>
       </html>
     `);
     win.document.close();
 
     const container = win.document.getElementById('cardsContainer');
-    const loadingDiv = win.document.getElementById('loading');
-    let index = 0;
-    const batchSize = 30; // fetch 30 cards at a time
 
-    async function fetchNextBatch() {
-      if (index >= selectedStudentIds.length) {
-        loadingDiv.innerText = "All Cards Loaded ✅";
-        return;
-      }
-
-      const batchIds = selectedStudentIds.slice(index, index + batchSize);
-
+    try {
       const formData = new FormData();
       formData.append('templateid', templateId);
-      batchIds.forEach(id => formData.append('studentids[]', id));
+      selectedIds.forEach(id => formData.append('studentids[]', id));
 
-      try {
-        const response = await fetch('https://esyserve.top/school/pdf', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
+      const response = await fetch('https://esyserve.top/school/pdf', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
 
-        const result = await response.json();
-        if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
+      const cards = await response.json();
+      if (!Array.isArray(cards)) throw new Error('Invalid response');
 
-        result.forEach(card => {
-          const wrapper = win.document.createElement('div');
-          wrapper.className = 'card-wrapper';
-          wrapper.innerHTML = card; // template default size
-          container.appendChild(wrapper);
-        });
+      container.innerHTML = cards.map(card => `<div class="card-wrapper">${card}</div>`).join('');
 
-        index += batchSize;
-        loadingDiv.innerText = `Loaded ${Math.min(index, selectedStudentIds.length)} of ${selectedStudentIds.length} cards...`;
-
-      } catch (error) {
-        console.error(error);
-        loadingDiv.innerText = 'Error loading cards ❌';
-      }
+    } catch (error) {
+      console.error(error);
+      container.innerText = 'Error loading cards ❌';
     }
-
-    fetchNextBatch();
-
-    // Lazy load next batch on scroll
-    win.addEventListener('scroll', () => {
-      const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
-      const windowHeight = win.innerHeight;
-      const scrollHeight = win.document.body.scrollHeight;
-
-      if (scrollTop + windowHeight >= scrollHeight - 50) {
-        fetchNextBatch();
-      }
-    });
   });
 });
