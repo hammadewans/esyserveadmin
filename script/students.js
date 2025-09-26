@@ -132,9 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
               overflow: hidden;
             }
             #loading {
-              position: fixed;
-              bottom: 0;
-              width: 100%;
               background: #fff;
               text-align: center;
               padding: 5px 0;
@@ -203,4 +200,5 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
 
