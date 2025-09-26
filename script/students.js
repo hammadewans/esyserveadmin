@@ -114,68 +114,36 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            @page { size: A4; margin: 0; }
             body {
               margin: 0;
-              padding: 0;
+              padding: 20px;
               box-sizing: border-box;
+              font-family: sans-serif;
             }
-            #cardsContainer {
-              margin: 0;
-              padding: 0;
+            .newpage {
+              margin-bottom: 40px; /* space between each 10-card block */
+            }
+            .row {
+              display: flex;
+              margin-bottom: 10px; /* space between rows */
+            }
+            .card {
+              flex: 1; /* 2 cards per row → each takes 50% */
+              margin-right: 10px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border: 1px solid #ccc;
+              height: 150px; /* adjust height */
               box-sizing: border-box;
+              overflow: hidden;
             }
-        
-            /* Page grid: 2 columns x 5 rows with custom gaps */
-           /* Page grid: 2 columns x 5 rows with controlled gaps */
-         .page {
-  width: 210mm;
-  height: 297mm;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  column-gap: 10mm; /* horizontal gap */
-  row-gap: 2mm;     /* vertical gap */
-  justify-items: stretch; /* stretch horizontally */
-  align-items: stretch;   /* stretch vertically */
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  page-break-after: always;
-
-  /* key fix: align first row to top */
-  align-content: start;
-}
-
-.card {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.card > div {
-  width: 100%;
-  height: 100%;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box;
-}
-
-          
-          /* Last page doesn’t force break */
-          .page:last-child { page-break-after: auto; }
-
-        
+            .row .card:last-child {
+              margin-right: 0;
+            }
             #loading {
               text-align: center;
               padding: 10px;
-              font-family: sans-serif;
             }
           </style>
         </head>
@@ -183,14 +151,14 @@ document.addEventListener('DOMContentLoaded', function () {
           <div id="cardsContainer"></div>
           <div id="loading">Loading cards...</div>
         </body>
-        </html>
+      </html>
     `);
     win.document.close();
 
     const container = win.document.getElementById('cardsContainer');
     const loadingDiv = win.document.getElementById('loading');
     let index = 0;
-    const batchSize = 30; // ✅ Fetch 30 cards per request
+    const batchSize = 30; // load 30 students per request
 
     async function fetchNextBatch() {
       if (index >= selectedStudentIds.length) {
@@ -214,16 +182,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
         if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
 
-        // Render batch (split into pages of 10 cards each)
-        let html = '';
+        // Render batch: every 10 cards → newpage, every 2 cards → row
         for (let i = 0; i < result.length; i += 10) {
-          html += '<div class="page">';
-          result.slice(i, i + 10).forEach(card => {
-            html += `<div class="card">${card}</div>`;
-          });
-          html += '</div>';
+          const newPage = win.document.createElement('div');
+          newPage.className = 'newpage';
+          const pageCards = result.slice(i, i + 10);
+
+          for (let j = 0; j < pageCards.length; j += 2) {
+            const row = win.document.createElement('div');
+            row.className = 'row';
+            const rowCards = pageCards.slice(j, j + 2);
+
+            rowCards.forEach(card => {
+              const cardDiv = win.document.createElement('div');
+              cardDiv.className = 'card';
+              cardDiv.innerHTML = card;
+              row.appendChild(cardDiv);
+            });
+
+            newPage.appendChild(row);
+          }
+
+          container.appendChild(newPage);
         }
-        container.insertAdjacentHTML('beforeend', html);
 
         index += batchSize;
         loadingDiv.innerText = `Loaded ${Math.min(index, selectedStudentIds.length)} of ${selectedStudentIds.length} cards...`;
@@ -237,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial load
     fetchNextBatch();
 
-    // Fetch next batch when scrolling near bottom
+    // Lazy load on scroll
     win.addEventListener('scroll', () => {
       const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
       const windowHeight = win.innerHeight;
@@ -248,11 +229,4 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
-
 });
-
-
-
-
-
-
