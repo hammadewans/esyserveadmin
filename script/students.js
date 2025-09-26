@@ -114,19 +114,18 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <meta charset="UTF-8">
           <title>Cards Preview</title>
-          <style>
+         <style>
             @page { size: A4; margin: 0; }
             body { margin: 0; padding: 0; }
             #cardsContainer { margin: 0; padding: 0; }
             .page {
               width: 210mm;
               height: 297mm;
-              display: flex;
-              flex-wrap: wrap;
+              display: grid;
+              grid-template-columns: repeat(2, 105mm);
+              grid-template-rows: repeat(5, 59.4mm);
               box-sizing: border-box;
               page-break-after: always;
-              justify-content: flex-start;
-              align-content: flex-start;
             }
             .card {
               width: 105mm;
@@ -186,3 +185,4 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
