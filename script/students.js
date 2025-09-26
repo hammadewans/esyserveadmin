@@ -114,36 +114,39 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
          <style>
-            @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; }
-            #cardsContainer { margin: 0; padding: 0; }
-.page {
-    width: 210mm;
-    height: 297mm;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns */
-    grid-template-rows: repeat(5, 1fr);    /* 5 rows */
-    column-gap: 10px; /* gap between columns */
-    row-gap: 3px;     /* gap between rows */
-    justify-content: center; /* center horizontally */
-    align-content: center;   /* center vertically */
-    box-sizing: border-box;
-    page-break-after: always;
-  }
+          @page { size: A4; margin: 0; }
+          body { margin: 0; padding: 0; }
+          #cardsContainer { margin: 0; padding: 0; }
+          
+          .page {
+              width: 210mm;
+              height: 297mm;
+              display: grid;
+              grid-template-columns: repeat(2, 1fr); /* 2 columns */
+              grid-template-rows: repeat(5, 1fr);    /* 5 rows */
+              column-gap: 0; /* remove column gap */
+              row-gap: 0;    /* remove row gap */
+              justify-content: stretch; /* stretch horizontally */
+              align-content: stretch;   /* stretch vertically */
+              box-sizing: border-box;
+              page-break-after: always;
+          }
+          
+          .card {
+              width: 100%;  /* take full column width */
+              height: 100%; /* take full row height */
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+              margin: 0;    /* remove margin */
+              padding: 0;   /* remove padding */
+              box-sizing: border-box;
+          }
+          
+          .page:last-child { page-break-after: auto; }
+          #loading { text-align: center; padding: 10px; font-family: sans-serif; }
 
-.card {
-    width: 105mm;
-    height: 59.4mm;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-.page:last-child { page-break-after: auto; }
-#loading { text-align: center; padding: 10px; font-family: sans-serif; }
 
           </style>
         </head>
@@ -218,4 +221,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
 
