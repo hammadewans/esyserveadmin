@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // ------------------ Fetch Students ------------------
   async function fetchStudents(userid) {
     try {
       const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
@@ -83,14 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchStudents(userid);
 
-  // ------------------ Select All Checkboxes ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-  // ------------------ Send Selected Students ------------------
-  document.getElementById('sendSelected').addEventListener('click', async () => {
+  document.getElementById('sendSelected').addEventListener('click', () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
     const templateId = document.getElementById('dynamicSelect').value;
@@ -114,11 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: sans-serif;
-            }
+            body { margin:0; padding:0; font-family: sans-serif; }
             #cardsContainer {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
@@ -148,66 +141,62 @@ document.addEventListener('DOMContentLoaded', function () {
         </head>
         <body>
           <div id="cardsContainer"></div>
-          <div id="loading">Loading cards...</div>
+          <div id="loading">Cards Loading...</div>
+          <script>
+            const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
+            const templateId = "${templateId}";
+            const container = document.getElementById('cardsContainer');
+            const loadingDiv = document.getElementById('loading');
+            let index = 0;
+            const batchSize = 10;
+
+            async function fetchNextBatch() {
+              if (index >= selectedStudentIds.length) {
+                loadingDiv.innerText = "All Cards Loaded ✅";
+                return;
+              }
+
+              const batchIds = selectedStudentIds.slice(index, index + batchSize);
+              const formData = new FormData();
+              formData.append('templateid', templateId);
+              batchIds.forEach(id => formData.append('studentids[]', id));
+
+              try {
+                const response = await fetch('https://esyserve.top/school/pdf', {
+                  method: 'POST',
+                  body: formData,
+                  credentials: 'include'
+                });
+                const result = await response.json();
+                result.forEach(card => {
+                  const wrapper = document.createElement('div');
+                  wrapper.className = 'card-wrapper';
+                  wrapper.innerHTML = card;
+                  container.appendChild(wrapper);
+                });
+
+                index += batchSize;
+                loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
+              } catch(e) {
+                console.error(e);
+                loadingDiv.innerText = 'Error loading cards ❌';
+              }
+            }
+
+            fetchNextBatch();
+
+            window.addEventListener('scroll', () => {
+              const scrollTop = window.scrollY || document.documentElement.scrollTop;
+              const windowHeight = window.innerHeight;
+              const scrollHeight = document.body.scrollHeight;
+              if (scrollTop + windowHeight >= scrollHeight - 50) {
+                fetchNextBatch();
+              }
+            });
+          </script>
         </body>
       </html>
     `);
     win.document.close();
-
-    const container = win.document.getElementById('cardsContainer');
-    const loadingDiv = win.document.getElementById('loading');
-    let index = 0;
-    const batchSize = 10; // 10 cards per page (2x5)
-
-    async function fetchNextBatch() {
-      if (index >= selectedStudentIds.length) {
-        loadingDiv.innerText = "All Cards Loaded ✅";
-        return;
-      }
-
-      const batchIds = selectedStudentIds.slice(index, index + batchSize);
-
-      const formData = new FormData();
-      formData.append('templateid', templateId);
-      batchIds.forEach(id => formData.append('studentids[]', id));
-
-      try {
-        const response = await fetch('https://esyserve.top/school/pdf', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-
-        const result = await response.json();
-        if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
-
-        result.forEach(card => {
-          const wrapper = win.document.createElement('div');
-          wrapper.className = 'card-wrapper';
-          wrapper.innerHTML = card;
-          container.appendChild(wrapper);
-        });
-
-        index += batchSize;
-        loadingDiv.innerText = `Loaded ${Math.min(index, selectedStudentIds.length)} of ${selectedStudentIds.length} cards...`;
-
-      } catch (error) {
-        console.error(error);
-        loadingDiv.innerText = 'Error loading cards ❌';
-      }
-    }
-
-    fetchNextBatch();
-
-    // Lazy load next batch on scroll
-    win.addEventListener('scroll', () => {
-      const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
-      const windowHeight = win.innerHeight;
-      const scrollHeight = win.document.body.scrollHeight;
-
-      if (scrollTop + windowHeight >= scrollHeight - 50) {
-        fetchNextBatch();
-      }
-    });
   });
 });
