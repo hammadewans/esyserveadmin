@@ -117,30 +117,34 @@ document.addEventListener('DOMContentLoaded', function () {
             @page { size: A4; margin: 0; }
             body { margin: 0; padding: 0; }
             #cardsContainer { margin: 0; padding: 0; }
-            .page {
-                width: 210mm;
-                height: 297mm;
-                display: grid;
-                grid-template-columns: repeat(2, 105mm);
-                grid-template-rows: repeat(5, 59.4mm);
-                gap: 0;
-                box-sizing: border-box;
-                page-break-after: always;
-              }
-              
-              .card {
-                width: 105mm;
-                height: 59.4mm;
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-              }
-            .page:last-child { page-break-after: auto; }
-            #loading { text-align: center; padding: 10px; font-family: sans-serif; }
+.page {
+    width: 210mm;
+    height: 297mm;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    grid-template-rows: repeat(5, 1fr);    /* 5 rows */
+    column-gap: 10px; /* gap between columns */
+    row-gap: 3px;     /* gap between rows */
+    justify-content: center; /* center horizontally */
+    align-content: center;   /* center vertically */
+    box-sizing: border-box;
+    page-break-after: always;
+  }
+
+.card {
+    width: 105mm;
+    height: 59.4mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.page:last-child { page-break-after: auto; }
+#loading { text-align: center; padding: 10px; font-family: sans-serif; }
+
           </style>
         </head>
         <body>
@@ -214,3 +218,4 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
