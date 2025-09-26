@@ -115,8 +115,34 @@ document.addEventListener('DOMContentLoaded', function () {
           <title>Cards Preview</title>
           <style>
             body {
+              margin: 0;
               padding: 0;
               font-family: sans-serif;
+            }
+            #cardsContainer {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              grid-template-rows: repeat(5, auto);
+              gap: 0;
+              width: 100vw;
+              height: 100vh;
+            }
+            .card-wrapper {
+              width: 100%;
+              height: 20vh;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              overflow: hidden;
+            }
+            #loading {
+              position: fixed;
+              bottom: 0;
+              width: 100%;
+              background: #fff;
+              text-align: center;
+              padding: 5px 0;
+              font-weight: bold;
             }
           </style>
         </head>
@@ -131,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const container = win.document.getElementById('cardsContainer');
     const loadingDiv = win.document.getElementById('loading');
     let index = 0;
-    const batchSize = 30; // fetch 30 cards at a time
+    const batchSize = 10; // 10 cards per page (2x5)
 
     async function fetchNextBatch() {
       if (index >= selectedStudentIds.length) {
@@ -158,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
         result.forEach(card => {
           const wrapper = win.document.createElement('div');
           wrapper.className = 'card-wrapper';
-          wrapper.innerHTML = card; // template default size
+          wrapper.innerHTML = card;
           container.appendChild(wrapper);
         });
 
@@ -185,4 +211,3 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
-
