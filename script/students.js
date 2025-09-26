@@ -114,32 +114,32 @@ document.addEventListener('DOMContentLoaded', function () {
         <head>
           <meta charset="UTF-8">
           <title>Cards Preview</title>
-          <style>
+         <style>
             @page { size: A4; margin: 0; }
             body { margin: 0; padding: 0; }
             #cardsContainer { margin: 0; padding: 0; }
             .page {
-              width: 210mm;
-              height: 297mm;
-              display: grid;
-              grid-template-columns: repeat(2, 105mm);
-              grid-template-rows: repeat(5, 59.38mm); /* ✅ Adjusted to avoid rounding overflow */
-              gap: 0;              /* ✅ No gaps */
-              line-height: 0;      /* ✅ Prevent whitespace gaps */
-              box-sizing: border-box;
-              page-break-after: always;
-            }
-            .card {
-              width: 105mm;
-              height: 59.38mm;
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-            }
+                width: 210mm;
+                height: 297mm;
+                display: grid;
+                grid-template-columns: repeat(2, 105mm);
+                grid-template-rows: repeat(5, 59.4mm);
+                gap: 0; /* ✅ No gaps between rows or columns */
+                box-sizing: border-box;
+                page-break-after: always;
+              }
+              
+              .card {
+                width: 105mm;
+                height: 59.4mm;
+                margin: 0;   /* ✅ Remove any spacing */
+                padding: 0;  /* ✅ No padding between cards */
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+              }
             .page:last-child { page-break-after: auto; }
             #loading { text-align: center; padding: 10px; font-family: sans-serif; }
           </style>
@@ -169,15 +169,43 @@ document.addEventListener('DOMContentLoaded', function () {
         throw new Error('Invalid response from server');
       }
 
-      // ✅ Split into A4 pages (10 cards per page → 2×5 layout)
-      let html = '';
-      for (let i = 0; i < result.length; i += 10) {
-        html += '<div class="page">';
-        html += result.slice(i, i + 10).map(card => `<div class="card">${card}</div>`).join('');
+      // ------------------ Scroll-based Lazy Loading ------------------
+      const container = win.document.getElementById('cardsContainer');
+      const loadingDiv = win.document.getElementById('loading');
+      let index = 0;
+      const pageSize = 10;
+
+      function loadNextPage() {
+        if (index >= result.length) {
+          loadingDiv.innerText = "All Cards Loaded ✅";
+          return;
+        }
+
+        const pageCards = result.slice(index, index + pageSize);
+        let html = '<div class="page">';
+        pageCards.forEach(card => {
+          html += `<div class="card">${card}</div>`;
+        });
         html += '</div>';
+        container.insertAdjacentHTML('beforeend', html);
+
+        index += pageSize;
+        loadingDiv.innerText = `Loaded ${Math.min(index, result.length)} of ${result.length} cards...`;
       }
 
-      win.document.getElementById('cardsContainer').innerHTML = html;
+      // Initial load
+      loadNextPage();
+
+      // Load more pages when scrolling near bottom
+      win.addEventListener('scroll', () => {
+        const scrollTop = win.scrollY || win.document.documentElement.scrollTop;
+        const windowHeight = win.innerHeight;
+        const scrollHeight = win.document.body.scrollHeight;
+
+        if (scrollTop + windowHeight >= scrollHeight - 50) {
+          loadNextPage();
+        }
+      });
 
     } catch (error) {
       console.error(error);
