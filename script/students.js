@@ -114,36 +114,18 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            @page { size: A4; margin: 0; }
             body {
-              margin: 0;
+              margin: 10px;
               padding: 0;
               font-family: sans-serif;
-              box-sizing: border-box;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
             }
-            #cardsContainer {
-              width: 210mm;
-              margin: 0 auto;
-            }
-            .page {
-              width: 210mm;
-              height: 297mm;
-              display: grid;
-              grid-template-columns: repeat(2, auto);
-              grid-template-rows: repeat(5, auto);
-              gap: 5mm 5mm; /* row-gap column-gap */
-              box-sizing: border-box;
-              page-break-after: always;
-              padding: 5mm;
-              justify-content: start;
-              align-content: start;
-            }
-            .page:last-child {
-              page-break-after: auto;
-            }
-            #loading {
-              text-align: center;
-              padding: 10px;
+            .card-wrapper {
+              display: flex;
+              width: calc(50% - 10px); /* 2 cards per row with gap */
+              justify-content: center;
             }
           </style>
         </head>
@@ -182,19 +164,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
         if (!response.ok || !Array.isArray(result)) throw new Error('Invalid response');
 
-        // Render batch: every 10 cards → new page
-        for (let i = 0; i < result.length; i += 10) {
-          const pageDiv = win.document.createElement('div');
-          pageDiv.className = 'page';
-          const pageCards = result.slice(i, i + 10);
-          pageCards.forEach(card => {
-            const cardDiv = win.document.createElement('div');
-            // No fixed width/height: use template default size
-            cardDiv.innerHTML = card;
-            pageDiv.appendChild(cardDiv);
-          });
-          container.appendChild(pageDiv);
-        }
+        result.forEach(card => {
+          const wrapper = win.document.createElement('div');
+          wrapper.className = 'card-wrapper';
+          wrapper.innerHTML = card; // template default size
+          container.appendChild(wrapper);
+        });
 
         index += batchSize;
         loadingDiv.innerText = `Loaded ${Math.min(index, selectedStudentIds.length)} of ${selectedStudentIds.length} cards...`;
