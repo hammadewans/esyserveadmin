@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('cardsContainer');
             const loadingDiv = document.getElementById('loading');
             let index = 0;
-            const batchSize = 10;
+            const batchSize = 50;
 
             async function fetchNextBatch() {
               if (index >= selectedStudentIds.length) {
@@ -203,3 +203,4 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
