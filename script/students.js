@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ✅ Open new window
+    // ✅ Open new window for page-wise printing
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -115,19 +115,24 @@ document.addEventListener('DOMContentLoaded', function () {
           <title>Cards Preview</title>
           <style>
             body { margin:0; padding:0; font-family: sans-serif; }
-            #cardsContainer {
+            .page {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
-              grid-auto-rows: auto;
-              gap: 10px; /* minor gap between cards */
+              grid-template-rows: repeat(5, auto);
+              gap: 10px;
               padding: 10px;
+              page-break-after: always;
             }
             .card-wrapper {
               width: 100%;
+              height: 20vh; /* fixed height per card */
               display: flex;
               justify-content: center;
               align-items: center;
               overflow: hidden;
+              border: 1px solid #ccc;
+              border-radius: 6px;
+              box-sizing: border-box;
             }
             #loading {
               position: fixed;
@@ -138,15 +143,19 @@ document.addEventListener('DOMContentLoaded', function () {
               padding: 5px 0;
               font-weight: bold;
             }
+            @media print {
+              #loading { display: none; }
+              .page { page-break-after: always; }
+            }
           </style>
         </head>
         <body>
-          <div id="cardsContainer"></div>
+          <div id="pagesContainer"></div>
           <div id="loading">Cards Loading...</div>
           <script>
             const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
             const templateId = "${templateId}";
-            const container = document.getElementById('cardsContainer');
+            const pagesContainer = document.getElementById('pagesContainer');
             const loadingDiv = document.getElementById('loading');
 
             let index = 0;
@@ -162,9 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
               if (isFetching) return;
               isFetching = true;
 
-              // calculate remaining students for last batch
               const batchIds = selectedStudentIds.slice(index, index + batchSize);
-
               const formData = new FormData();
               formData.append('templateid', templateId);
               batchIds.forEach(id => formData.append('studentids[]', id));
@@ -177,18 +184,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 const result = await response.json();
 
-                result.forEach(card => {
+                let currentPage = null;
+                result.forEach((card, i) => {
+                  if (i % 10 === 0) {
+                    // create new page every 10 cards
+                    currentPage = document.createElement('div');
+                    currentPage.className = 'page';
+                    pagesContainer.appendChild(currentPage);
+                  }
                   const wrapper = document.createElement('div');
                   wrapper.className = 'card-wrapper';
                   wrapper.innerHTML = card;
-                  container.appendChild(wrapper);
+                  currentPage.appendChild(wrapper);
                 });
 
-                index += batchIds.length; // move index by actual number fetched
+                index += batchIds.length;
                 loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
                 isFetching = false;
 
-                // If user is already near bottom, load next batch automatically
+                // auto-fetch next batch if near bottom
                 const scrollBottom = window.scrollY + window.innerHeight;
                 if (scrollBottom >= document.body.scrollHeight - 100) {
                   fetchNextBatch();
@@ -201,7 +215,6 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             }
 
-            // initial fetch
             fetchNextBatch();
 
             window.addEventListener('scroll', () => {
