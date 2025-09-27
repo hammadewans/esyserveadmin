@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
               grid-template-rows: repeat(5, auto);
               gap: 0;
               width: 100vw;
+              height: 100vh;
             }
             .card-wrapper {
               width: 100%;
@@ -131,11 +132,13 @@ document.addEventListener('DOMContentLoaded', function () {
               overflow: hidden;
             }
             #loading {
+              position: fixed;
+              bottom: 0;
               width: 100%;
+              background: #fff;
               text-align: center;
               padding: 5px 0;
               font-weight: bold;
-              margin-top: 10px;
             }
           </style>
         </head>
@@ -148,10 +151,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('cardsContainer');
             const loadingDiv = document.getElementById('loading');
             let index = 0;
-            const batchSize = 50; // adjust per request
+            const batchSize = 10;
 
             async function fetchNextBatch() {
-              if (index >= selectedStudentIds.length) return;
+              if (index >= selectedStudentIds.length) {
+                loadingDiv.innerText = "All Cards Loaded ✅";
+                return;
+              }
 
               const batchIds = selectedStudentIds.slice(index, index + batchSize);
               const formData = new FormData();
@@ -165,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
                   credentials: 'include'
                 });
                 const result = await response.json();
-
                 result.forEach(card => {
                   const wrapper = document.createElement('div');
                   wrapper.className = 'card-wrapper';
@@ -174,24 +179,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 index += batchSize;
-
-                // Only show final message at the bottom
-                if (index >= selectedStudentIds.length) {
-                  loadingDiv.innerText = "All Cards Loaded ✅";
-                } else {
-                  loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
-                }
-
+                loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
               } catch(e) {
                 console.error(e);
                 loadingDiv.innerText = 'Error loading cards ❌';
               }
             }
 
-            // Start fetching batches
             fetchNextBatch();
 
-            // Lazy load additional batches on scroll
             window.addEventListener('scroll', () => {
               const scrollTop = window.scrollY || document.documentElement.scrollTop;
               const windowHeight = window.innerHeight;
