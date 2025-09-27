@@ -118,13 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
             #cardsContainer {
               display: grid;
               grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-              gap: 10px;
-              padding: 10px;
             }
             .card-wrapper {
-              border: 1px solid #ccc;
-              border-radius: 6px;
-              padding: 10px;
               display: flex;
               flex-direction: column;
               align-items: center;
@@ -191,3 +186,4 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
