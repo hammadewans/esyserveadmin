@@ -6,8 +6,8 @@
       method: 'GET'
     });
 
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const templates = await response.json();
-    if (!response.ok) throw new Error(templates || 'Failed to fetch templates.');
 
     const select = document.getElementById('dynamicSelect');
     templates.forEach(template => {
@@ -20,7 +20,8 @@
     });
 
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('Fetch templates error:', error);
+    alert('Unable to fetch templates: ' + error.message);
   }
 })();
 
@@ -42,8 +43,9 @@ document.addEventListener('DOMContentLoaded', function () {
         method: 'GET'
       });
 
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const students = await response.json();
-      if (!response.ok || !Array.isArray(students)) throw new Error('Failed to fetch students.');
+      if (!Array.isArray(students)) throw new Error('Invalid data format from server');
 
       const tableBody = document.querySelector('#studentTable tbody');
       const container = document.getElementById('studentResultContainer');
@@ -76,8 +78,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
     } catch (error) {
-      console.error('Fetch error:', error);
-      alert('Unable to fetch student data.');
+      console.error('Fetch students error:', error);
+      alert('Unable to fetch student data: ' + error.message);
     }
   }
 
@@ -105,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ✅ Open new window
+    // ✅ Open new window for cards preview
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -114,12 +116,16 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            body { margin:0; padding:0; font-family: sans-serif; }
+            body { margin:0; padding:10px; font-family: sans-serif; }
             #cardsContainer {
               display: grid;
               grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              gap: 10px;
             }
             .card-wrapper {
+              border: 1px solid #ccc;
+              border-radius: 6px;
+              padding: 10px;
               display: flex;
               flex-direction: column;
               align-items: center;
@@ -162,7 +168,10 @@ document.addEventListener('DOMContentLoaded', function () {
                   body: formData,
                   credentials: 'include'
                 });
+
+                if (!response.ok) throw new Error('HTTP error! Status: ' + response.status);
                 const cards = await response.json();
+                if (!Array.isArray(cards)) throw new Error('Invalid data from server');
 
                 cards.forEach(cardHTML => {
                   const wrapper = document.createElement('div');
@@ -173,8 +182,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 loadingDiv.innerText = \`All ${selectedStudentIds.length} cards loaded ✅\`;
               } catch (e) {
-                console.error(e);
+                console.error('Cards fetch error:', e);
                 loadingDiv.innerText = 'Error loading cards ❌';
+                alert('Unable to load cards: ' + e.message);
               }
             }
 
