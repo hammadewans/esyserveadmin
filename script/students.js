@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // ------------------ Fetch Students ------------------
   async function fetchStudents(userid) {
     try {
       const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
@@ -82,13 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchStudents(userid);
 
-  // ------------------ Select All Checkboxes ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-  // ------------------ Send Selected Students ------------------
   document.getElementById('sendSelected').addEventListener('click', () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
@@ -103,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // ------------------ Open Print Window ------------------
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -115,11 +111,19 @@ document.addEventListener('DOMContentLoaded', function () {
             * { margin:0; padding:0; box-sizing:border-box; }
             html, body { width:100%; height:100%; }
             .page {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 210mm;  /* A4 width */
+              height: 297mm; /* A4 height */
+            }
+            .grid {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
               grid-template-rows: repeat(5, 1fr);
-              width: 210mm;  /* A4 width */
-              height: 297mm; /* A4 height */
+              gap: 0;
+              width: 100%;
+              height: 100%;
             }
             .card {
               width: 100%;
@@ -159,16 +163,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = await response.json();
 
                 let currentPage = null;
+                let currentGrid = null;
+
                 result.forEach((card, i) => {
                   if ((index + i) % 10 === 0) {
                     currentPage = document.createElement('div');
                     currentPage.className = 'page';
                     pagesContainer.appendChild(currentPage);
+
+                    currentGrid = document.createElement('div');
+                    currentGrid.className = 'grid';
+                    currentPage.appendChild(currentGrid);
                   }
+
                   const cardDiv = document.createElement('div');
                   cardDiv.className = 'card';
                   cardDiv.innerHTML = card;
-                  currentPage.appendChild(cardDiv);
+                  currentGrid.appendChild(cardDiv);
                 });
 
                 index += batchIds.length;
@@ -184,7 +195,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             fetchNextBatch();
-
             window.addEventListener('scroll', () => {
               const scrollTop = window.scrollY || document.documentElement.scrollTop;
               const windowHeight = window.innerHeight;
