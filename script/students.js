@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function () {
         credentials: 'include',
         method: 'GET'
       });
-
       const students = await response.json();
       if (!response.ok || !Array.isArray(students)) throw new Error('Failed to fetch students.');
 
@@ -99,13 +98,12 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Please select a template.');
       return;
     }
-
     if (selectedStudentIds.length === 0) {
       alert('Please select at least one student.');
       return;
     }
 
-    // ✅ Open new window for page-wise printing
+    // ------------------ Open Print Window ------------------
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
@@ -114,60 +112,36 @@ document.addEventListener('DOMContentLoaded', function () {
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            body { margin:0; padding:0; font-family: sans-serif; }
+            * { margin:0; padding:0; box-sizing:border-box; }
+            html, body { width:100%; height:100%; }
             .page {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
-              grid-template-rows: repeat(5, auto);
-              gap: 10px;
-              padding: 10px;
-              page-break-after: always;
+              grid-template-rows: repeat(5, 1fr);
+              width: 210mm;  /* A4 width */
+              height: 297mm; /* A4 height */
             }
-            .card-wrapper {
+            .card {
               width: 100%;
-              height: 20vh; /* fixed height per card */
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              overflow: hidden;
-              border: 1px solid #ccc;
-              border-radius: 6px;
-              box-sizing: border-box;
-            }
-            #loading {
-              position: fixed;
-              bottom: 0;
-              width: 100%;
-              background: #fff;
-              text-align: center;
-              padding: 5px 0;
-              font-weight: bold;
+              height: 100%;
             }
             @media print {
-              #loading { display: none; }
               .page { page-break-after: always; }
             }
           </style>
         </head>
         <body>
           <div id="pagesContainer"></div>
-          <div id="loading">Cards Loading...</div>
           <script>
             const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
             const templateId = "${templateId}";
             const pagesContainer = document.getElementById('pagesContainer');
-            const loadingDiv = document.getElementById('loading');
-
             let index = 0;
             const batchSize = 50;
             let isFetching = false;
 
             async function fetchNextBatch() {
-              if (index >= selectedStudentIds.length) {
-                loadingDiv.innerText = "All Cards Loaded ✅";
-                return;
-              }
-
+              if (index >= selectedStudentIds.length) return;
               if (isFetching) return;
               isFetching = true;
 
@@ -186,31 +160,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 let currentPage = null;
                 result.forEach((card, i) => {
-                  if (i % 10 === 0) {
-                    // create new page every 10 cards
+                  if ((index + i) % 10 === 0) {
                     currentPage = document.createElement('div');
                     currentPage.className = 'page';
                     pagesContainer.appendChild(currentPage);
                   }
-                  const wrapper = document.createElement('div');
-                  wrapper.className = 'card-wrapper';
-                  wrapper.innerHTML = card;
-                  currentPage.appendChild(wrapper);
+                  const cardDiv = document.createElement('div');
+                  cardDiv.className = 'card';
+                  cardDiv.innerHTML = card;
+                  currentPage.appendChild(cardDiv);
                 });
 
                 index += batchIds.length;
-                loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
                 isFetching = false;
 
-                // auto-fetch next batch if near bottom
                 const scrollBottom = window.scrollY + window.innerHeight;
-                if (scrollBottom >= document.body.scrollHeight - 100) {
-                  fetchNextBatch();
-                }
+                if (scrollBottom >= document.body.scrollHeight - 100) fetchNextBatch();
 
-              } catch(e) {
+              } catch (e) {
                 console.error(e);
-                loadingDiv.innerText = 'Error loading cards ❌';
                 isFetching = false;
               }
             }
@@ -221,9 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
               const scrollTop = window.scrollY || document.documentElement.scrollTop;
               const windowHeight = window.innerHeight;
               const scrollHeight = document.body.scrollHeight;
-              if (scrollTop + windowHeight >= scrollHeight - 50) {
-                fetchNextBatch();
-              }
+              if (scrollTop + windowHeight >= scrollHeight - 50) fetchNextBatch();
             });
           </script>
         </body>
