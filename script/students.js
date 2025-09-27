@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ------------------ Send Selected Students ------------------
-  document.getElementById('sendSelected').addEventListener('click', () => {
+  document.getElementById('sendSelected').addEventListener('click', async () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
     const selectedStudentIds = selectedCheckboxes.map(cb => cb.value);
     const templateId = document.getElementById('dynamicSelect').value;
@@ -117,19 +117,24 @@ document.addEventListener('DOMContentLoaded', function () {
             body { margin:0; padding:0; font-family: sans-serif; }
             #cardsContainer {
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              grid-template-rows: repeat(5, auto);
-              gap: 0;
-              width: 100vw;
-              height: 100vh;
+              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              gap: 10px;
+              padding: 10px;
             }
             .card-wrapper {
-              width: 100%;
-              height: 20vh;
+              border: 1px solid #ccc;
+              border-radius: 6px;
+              padding: 10px;
               display: flex;
-              justify-content: center;
+              flex-direction: column;
               align-items: center;
-              overflow: hidden;
+              justify-content: center;
+            }
+            .card-wrapper img {
+              width: 100%;
+              height: auto;
+              object-fit: cover;
+              border-radius: 6px;
             }
             #loading {
               position: fixed;
@@ -144,58 +149,41 @@ document.addEventListener('DOMContentLoaded', function () {
         </head>
         <body>
           <div id="cardsContainer"></div>
-          <div id="loading">Cards Loading...</div>
+          <div id="loading">Loading cards...</div>
           <script>
             const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
             const templateId = "${templateId}";
             const container = document.getElementById('cardsContainer');
             const loadingDiv = document.getElementById('loading');
-            let index = 0;
-            const batchSize = 50;
 
-            async function fetchNextBatch() {
-              if (index >= selectedStudentIds.length) {
-                loadingDiv.innerText = "All Cards Loaded ✅";
-                return;
-              }
-
-              const batchIds = selectedStudentIds.slice(index, index + batchSize);
-              const formData = new FormData();
-              formData.append('templateid', templateId);
-              batchIds.forEach(id => formData.append('studentids[]', id));
-
+            async function loadAllCards() {
               try {
+                const formData = new FormData();
+                formData.append('templateid', templateId);
+                selectedStudentIds.forEach(id => formData.append('studentids[]', id));
+
                 const response = await fetch('https://esyserve.top/school/pdf', {
                   method: 'POST',
                   body: formData,
                   credentials: 'include'
                 });
-                const result = await response.json();
-                result.forEach(card => {
+                const cards = await response.json();
+
+                cards.forEach(cardHTML => {
                   const wrapper = document.createElement('div');
                   wrapper.className = 'card-wrapper';
-                  wrapper.innerHTML = card;
+                  wrapper.innerHTML = cardHTML;
                   container.appendChild(wrapper);
                 });
 
-                index += batchSize;
-                loadingDiv.innerText = \`Loaded \${Math.min(index, selectedStudentIds.length)} of \${selectedStudentIds.length} cards...\`;
-              } catch(e) {
+                loadingDiv.innerText = \`All ${selectedStudentIds.length} cards loaded ✅\`;
+              } catch (e) {
                 console.error(e);
                 loadingDiv.innerText = 'Error loading cards ❌';
               }
             }
 
-            fetchNextBatch();
-
-            window.addEventListener('scroll', () => {
-              const scrollTop = window.scrollY || document.documentElement.scrollTop;
-              const windowHeight = window.innerHeight;
-              const scrollHeight = document.body.scrollHeight;
-              if (scrollTop + windowHeight >= scrollHeight - 50) {
-                fetchNextBatch();
-              }
-            });
+            loadAllCards();
           </script>
         </body>
       </html>
@@ -203,4 +191,3 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
-
