@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <td><input type="checkbox" class="student-checkbox" value="${student.studentid}"></td>
           <td>${student.studentid || ''}</td>
           <td>${student.student || ''}</td>
+          <td>${student.father || ''}</td>
           <td>${student.class || ''}</td>
           <td>${student.sectionclass || ''}</td>
           <td><img src="assets/images/${student.imgstudent || ''}" 
@@ -208,3 +209,4 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
