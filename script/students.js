@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <meta charset="UTF-8">
     <title>Cards Preview</title>
     <style>
+     
       * {
         margin: 0;
         padding: 0;
@@ -133,20 +134,20 @@ document.addEventListener('DOMContentLoaded', function () {
       /* A4 page grid (5x2) with horizontal gap only */
       .page {
         width: 210mm;
-        height: 297mm;
+        height: 297mm; padding: 0.25mm;
         display: grid;
-        grid-template-columns: repeat(2, 88mm);
-        grid-template-rows: repeat(5, 58mm);
+        grid-template-columns: repeat(2, 87.176mm);
+        grid-template-rows: repeat(5, 56.176mm);
         justify-content: center;
         align-content: center;
         column-gap: 12mm; /* ✅ spacing only between columns */
-        row-gap: 1mm;    /* no space between rows */
+        row-gap: 1.5mm;    /* no space between rows */
         page-break-after: always;
       }
 
       .card {
         width: 87.176mm;
-        height: 57.176mm;
+        height: 56.176mm;
         overflow: hidden;
       }
 
@@ -231,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
 
 
 
