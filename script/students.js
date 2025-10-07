@@ -148,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
             .card {
               width: 88mm;
               height: 58mm;
-              border: 0.3mm solid #000; /* for visualization, remove later */
               overflow: hidden;
             }
       
@@ -232,5 +231,6 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
 
 
