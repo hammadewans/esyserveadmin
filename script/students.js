@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
         justify-content: center;
         align-content: center;
         column-gap: 12mm; /* ✅ spacing only between columns */
-        row-gap: 0mm;    /* no space between rows */
+        row-gap: 1mm;    /* no space between rows */
         page-break-after: always;
       }
 
@@ -231,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
 
 
 
