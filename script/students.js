@@ -105,132 +105,134 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.open();
     win.document.write(`
      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Cards Preview</title>
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
+  <head>
+    <meta charset="UTF-8">
+    <title>Cards Preview</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      /* A4 page grid (5x2) with horizontal gap only */
+      .page {
+        width: 210mm;
+        height: 297mm;
+        display: grid;
+        grid-template-columns: repeat(2, 88mm);
+        grid-template-rows: repeat(5, 58mm);
+        justify-content: center;
+        align-content: center;
+        column-gap: 4mm; /* ✅ spacing only between columns */
+        row-gap: 0mm;    /* no space between rows */
+        page-break-after: always;
+      }
+
+      .card {
+        width: 88mm;
+        height: 58mm;
+        border: 0.3mm solid #000; /* visible border for reference */
+        overflow: hidden;
+      }
+
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .page {
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pagesContainer"></div>
+
+    <script>
+      const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
+      const templateId = "${templateId}";
+      const pagesContainer = document.getElementById('pagesContainer');
+      let index = 0;
+      const batchSize = 50;
+      let isFetching = false;
+
+      async function fetchNextBatch() {
+        if (index >= selectedStudentIds.length || isFetching) return;
+        isFetching = true;
+
+        const batchIds = selectedStudentIds.slice(index, index + batchSize);
+        const formData = new FormData();
+        formData.append('templateid', templateId);
+        batchIds.forEach(id => formData.append('studentids[]', id));
+
+        try {
+          const response = await fetch('https://esyserve.top/school/pdf', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          const result = await response.json();
+
+          let currentPage = null;
+          let cardCount = 0;
+
+          result.forEach((cardHTML, i) => {
+            if (cardCount % 10 === 0) {
+              currentPage = document.createElement('div');
+              currentPage.className = 'page';
+              pagesContainer.appendChild(currentPage);
             }
-      
-            html, body {
-              width: 100%;
-              height: 100%;
-            }
-      
-            /* Set exact print page size */
-            @page {
-              size: A4;
-              margin: 0;
-            }
-      
-            body {
-              margin: 0;
-              padding: 0;
-            }
-      
-            /* A4 page container */
-            .page {
-              width: 210mm;
-              height: 297mm;
-              display: grid;
-              grid-template-columns: repeat(2, 88mm);
-              grid-template-rows: repeat(5, 58mm);
-              justify-content: center;
-              align-content: center;
-              gap: 0mm; /* change to 2mm if you want spacing between cards */
-              page-break-after: always;
-            }
-      
-            /* Each ID card */
-            .card {
-              width: 88mm;
-              height: 58mm;
-              overflow: hidden;
-            }
-      
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              .page {
-                page-break-after: always;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div id="pagesContainer"></div>
-      
-          <script>
-            const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
-            const templateId = "${templateId}";
-            const pagesContainer = document.getElementById('pagesContainer');
-            let index = 0;
-            const batchSize = 50;
-            let isFetching = false;
-      
-            async function fetchNextBatch() {
-              if (index >= selectedStudentIds.length || isFetching) return;
-              isFetching = true;
-      
-              const batchIds = selectedStudentIds.slice(index, index + batchSize);
-              const formData = new FormData();
-              formData.append('templateid', templateId);
-              batchIds.forEach(id => formData.append('studentids[]', id));
-      
-              try {
-                const response = await fetch('https://esyserve.top/school/pdf', {
-                  method: 'POST',
-                  body: formData,
-                  credentials: 'include'
-                });
-                const result = await response.json();
-      
-                let currentPage = null;
-                let cardCount = 0;
-      
-                result.forEach((cardHTML, i) => {
-                  if (cardCount % 10 === 0) {
-                    currentPage = document.createElement('div');
-                    currentPage.className = 'page';
-                    pagesContainer.appendChild(currentPage);
-                  }
-      
-                  const cardDiv = document.createElement('div');
-                  cardDiv.className = 'card';
-                  cardDiv.innerHTML = cardHTML;
-                  currentPage.appendChild(cardDiv);
-      
-                  cardCount++;
-                });
-      
-                index += batchIds.length;
-              } catch (err) {
-                console.error(err);
-              } finally {
-                isFetching = false;
-              }
-            }
-      
-            fetchNextBatch();
-      
-            window.addEventListener('scroll', () => {
-              if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                fetchNextBatch();
-              }
-            });
-          </script>
-        </body>
-      </html>
+
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card';
+            cardDiv.innerHTML = cardHTML;
+            currentPage.appendChild(cardDiv);
+
+            cardCount++;
+          });
+
+          index += batchIds.length;
+        } catch (err) {
+          console.error(err);
+        } finally {
+          isFetching = false;
+        }
+      }
+
+      fetchNextBatch();
+
+      window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+          fetchNextBatch();
+        }
+      });
+    </script>
+  </body>
+</html>
+
 
     `);
     win.document.close();
   });
 });
+
 
 
 
