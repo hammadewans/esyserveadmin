@@ -104,39 +104,68 @@ document.addEventListener('DOMContentLoaded', function () {
     const win = window.open('about:blank', '_blank');
     win.document.open();
     win.document.write(`
-      <html>
+     <html>
         <head>
           <meta charset="UTF-8">
           <title>Cards Preview</title>
           <style>
-            * { margin:0; padding:0; box-sizing:border-box; }
-            html, body { width:100%; height:100%; }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+      
+            html, body {
+              width: 100%;
+              height: 100%;
+            }
+      
+            /* Set exact print page size */
+            @page {
+              size: A4;
+              margin: 0;
+            }
+      
+            body {
+              margin: 0;
+              padding: 0;
+            }
+      
+            /* A4 page container */
             .page {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              width: 210mm;  /* A4 width */
-              height: 297mm; /* A4 height */
-            }
-            .grid {
+              width: 210mm;
+              height: 297mm;
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              grid-template-rows: repeat(5, 1fr);
-              gap: 0;
-              width: 100%;
-              height: 100%;
+              grid-template-columns: repeat(2, 88mm);
+              grid-template-rows: repeat(5, 58mm);
+              justify-content: center;
+              align-content: center;
+              gap: 0mm; /* change to 2mm if you want spacing between cards */
+              page-break-after: always;
             }
+      
+            /* Each ID card */
             .card {
-              width: 100%;
-              height: 100%;
+              width: 88mm;
+              height: 58mm;
+              border: 0.3mm solid #000; /* for visualization, remove later */
+              overflow: hidden;
             }
+      
             @media print {
-              .page { page-break-after: always; }
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              .page {
+                page-break-after: always;
+              }
             }
           </style>
         </head>
         <body>
           <div id="pagesContainer"></div>
+      
           <script>
             const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
             const templateId = "${templateId}";
@@ -144,17 +173,16 @@ document.addEventListener('DOMContentLoaded', function () {
             let index = 0;
             const batchSize = 50;
             let isFetching = false;
-
+      
             async function fetchNextBatch() {
-              if (index >= selectedStudentIds.length) return;
-              if (isFetching) return;
+              if (index >= selectedStudentIds.length || isFetching) return;
               isFetching = true;
-
+      
               const batchIds = selectedStudentIds.slice(index, index + batchSize);
               const formData = new FormData();
               formData.append('templateid', templateId);
               batchIds.forEach(id => formData.append('studentids[]', id));
-
+      
               try {
                 const response = await fetch('https://esyserve.top/school/pdf', {
                   method: 'POST',
@@ -162,51 +190,47 @@ document.addEventListener('DOMContentLoaded', function () {
                   credentials: 'include'
                 });
                 const result = await response.json();
-
+      
                 let currentPage = null;
-                let currentGrid = null;
-
-                result.forEach((card, i) => {
-                  if ((index + i) % 10 === 0) {
+                let cardCount = 0;
+      
+                result.forEach((cardHTML, i) => {
+                  if (cardCount % 10 === 0) {
                     currentPage = document.createElement('div');
                     currentPage.className = 'page';
                     pagesContainer.appendChild(currentPage);
-
-                    currentGrid = document.createElement('div');
-                    currentGrid.className = 'grid';
-                    currentPage.appendChild(currentGrid);
                   }
-
+      
                   const cardDiv = document.createElement('div');
                   cardDiv.className = 'card';
-                  cardDiv.innerHTML = card;
-                  currentGrid.appendChild(cardDiv);
+                  cardDiv.innerHTML = cardHTML;
+                  currentPage.appendChild(cardDiv);
+      
+                  cardCount++;
                 });
-
+      
                 index += batchIds.length;
-                isFetching = false;
-
-                const scrollBottom = window.scrollY + window.innerHeight;
-                if (scrollBottom >= document.body.scrollHeight - 100) fetchNextBatch();
-
-              } catch (e) {
-                console.error(e);
+              } catch (err) {
+                console.error(err);
+              } finally {
                 isFetching = false;
               }
             }
-
+      
             fetchNextBatch();
+      
             window.addEventListener('scroll', () => {
-              const scrollTop = window.scrollY || document.documentElement.scrollTop;
-              const windowHeight = window.innerHeight;
-              const scrollHeight = document.body.scrollHeight;
-              if (scrollTop + windowHeight >= scrollHeight - 50) fetchNextBatch();
+              if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+                fetchNextBatch();
+              }
             });
           </script>
         </body>
       </html>
+
     `);
     win.document.close();
   });
 });
+
 
