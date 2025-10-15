@@ -136,8 +136,8 @@ document.addEventListener('DOMContentLoaded', function () {
         width: 210mm;
         height: 297mm; padding: 0.25mm;
         display: grid;
-        grid-template-columns: repeat(2, 87.176mm);
-        grid-template-rows: repeat(5, 56.176mm);
+        grid-template-columns: repeat(2, 85.6mm);
+        grid-template-rows: repeat(5, 53.98mm);
         justify-content: center;
         align-content: center;
         column-gap: 12mm; /* ✅ spacing only between columns */
@@ -146,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       .card {
-        width: 87.176mm;
-        height: 56.176mm;
+        width: 85.6mm;
+        height: 53.98mm;
         overflow: hidden;
       }
 
@@ -232,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     win.document.close();
   });
 });
+
 
 
 
