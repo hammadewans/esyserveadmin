@@ -136,12 +136,12 @@ document.addEventListener('DOMContentLoaded', function () {
         width: 297mm;
         height: 210mm; padding: 0.25mm;
         display: grid;
-        grid-template-columns: repeat(2, 53.98mm);
-        grid-template-rows: repeat(5, 85.6mm);
+        grid-template-columns: repeat(5, 53.98mm);
+        grid-template-rows: repeat(2, 85.6mm);
         justify-content: center;
         align-content: center;
-        column-gap: 12mm; /* ✅ spacing only between columns */
-        row-gap: 1.5mm;    /* no space between rows */
+        column-gap: 1.5mm; /* ✅ spacing only between columns */
+        row-gap: 12mm;    /* no space between rows */
         page-break-after: always;
       }
 
