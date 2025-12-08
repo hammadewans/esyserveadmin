@@ -75,7 +75,7 @@ document.addEventListener('click', async function (event) {
           </a>
         </td>
         <td>
-          <a href="studentsportrait.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
+          <a href="student.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
             PDF Portrait Students
           </a>
         </td>
@@ -99,4 +99,5 @@ document.addEventListener('click', async function (event) {
     console.error('Error fetching users:', error);
   }
 })();
+
 
