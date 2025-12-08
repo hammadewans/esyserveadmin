@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       @page {
-        size: A4;
+        size: A4 landscape;
         margin: 0;
       }
 
@@ -134,7 +134,8 @@ document.addEventListener('DOMContentLoaded', function () {
       /* A4 page grid (5x2) with horizontal gap only */
       .page {
         width: 297mm;
-        height: 210mm; padding: 0.25mm;
+        height: 210mm; 
+        padding: 0.25mm;
         display: grid;
         grid-template-columns: repeat(5, 53.98mm);
         grid-template-rows: repeat(2, 85.6mm);
