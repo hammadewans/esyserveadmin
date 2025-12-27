@@ -70,22 +70,22 @@ document.addEventListener('click', async function (event) {
           </button>
         </td>
         <td>
-          <a href="students.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
+          <a href="students.html?userid=${user.userid}"             class="btn btn-sm btn-secondary" target="_blank">
             PDF Students
           </a>
         </td>
         <td>
-          <a href="studentsportrait.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
+          <a href="studentsportrait.html?userid=${user.userid}"     class="btn btn-sm btn-primary" target="_blank">
             PDF Portrait Students
           </a>
         </td>
         <td>
-          <a href="teachers.html?userid=${user.userid}" class="btn btn-sm btn-secondary" target="_blank">
+          <a href="teachers.html?userid=${user.userid}"             class="btn btn-sm btn-secondary" target="_blank">
             PDF Teachers
           </a>
         </td>
         <td>
-          <a href="teachersportrait.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
+          <a href="teachersportrait.html?userid=${user.userid}"     class="btn btn-sm btn-primary" target="_blank">
             PDF Portrait Teacher
           </a>
         </td>
@@ -104,6 +104,7 @@ document.addEventListener('click', async function (event) {
     console.error('Error fetching users:', error);
   }
 })();
+
 
 
 
