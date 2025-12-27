@@ -84,6 +84,11 @@ document.addEventListener('click', async function (event) {
             PDF Teachers
           </a>
         </td>
+        <td>
+          <a href="teachersportrait.html?userid=${user.userid}" class="btn btn-sm btn-primary" target="_blank">
+            PDF Portrait Teacher
+          </a>
+        </td>
       `;
       tableBody.appendChild(row);
     });
@@ -99,6 +104,7 @@ document.addEventListener('click', async function (event) {
     console.error('Error fetching users:', error);
   }
 })();
+
 
 
 
