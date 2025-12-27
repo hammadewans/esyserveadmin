@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <td>${teacher.teacherid || ''}</td>
           <td>${teacher.teacher || ''}</td>
           <td>${teacher.role || ''}</td>
-          <td><img src="${teacher.imgteacher || ''}" alt="Teacher" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td><img src="assets/images/${teacher.imgteacher || ''}" alt="Teacher" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
         `;
         tableBody.appendChild(row);
       });
@@ -148,3 +148,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
