@@ -1,3 +1,4 @@
+// ------------------ Fetch Templates ------------------
 (async function fetchTemplates() {
   try {
     const response = await fetch('https://esyserve.top/fetch/template', {
@@ -25,6 +26,7 @@
 })();
 
 
+// ------------------ On DOM Ready ------------------
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
@@ -55,7 +57,11 @@ document.addEventListener('DOMContentLoaded', function () {
           <td>${teacher.teacherid || ''}</td>
           <td>${teacher.teacher || ''}</td>
           <td>${teacher.role || ''}</td>
-          <td><img src="assets/images/${teacher.imgteacher || ''}" alt="Teacher" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td>
+            <img src="assets/images/${teacher.imgteacher || ''}" 
+            alt="Teacher" 
+            style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
+          </td>
         `;
         tableBody.appendChild(row);
       });
@@ -65,7 +71,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($.fn.DataTable.isDataTable('#teacherTable')) {
         $('#teacherTable').DataTable().clear().destroy();
       }
-      $('#teacherTable').DataTable();
+
+      $('#teacherTable').DataTable({
+        pageLength: 90,
+        lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
+      });
 
     } catch (error) {
       console.error('Fetch error:', error);
@@ -75,12 +85,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchTeachers(userid);
 
+  // Select All
   document.getElementById('selectAllTeachers').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.teacher-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-  document.getElementById('sendSelectedTeachers').addEventListener('click', async () => {
+  // Send Selected
+  document.getElementById('sendSelectedTeachers').addEventListener('click', () => {
     const selectedCheckboxes = Array.from(document.querySelectorAll('.teacher-checkbox:checked'));
     const selectedTeacherIds = selectedCheckboxes.map(cb => cb.value);
     const templateId = document.getElementById('dynamicSelect').value;
@@ -95,56 +107,142 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('templateid', templateId);
-    selectedTeacherIds.forEach(id => formData.append('teacherids[]', id));
+    const win = window.open('about:blank', '_blank');
+    win.document.open();
 
-    try {
-      const response = await fetch('https://esyserve.top/teacher/pdf', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+    win.document.write(`
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Teacher Cards Preview</title>
 
-      const result = await response.json(); // array of HTML card strings
-      console.log(result);
-      if (!response.ok || !Array.isArray(result)) {
-        throw new Error('Invalid response from server');
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 0.25mm;
+  display: grid;
+  grid-template-columns: repeat(2, 86mm);
+  grid-template-rows: repeat(5, 54.4mm);
+  justify-content: center;
+  align-content: center;
+  column-gap: 12mm;
+  row-gap: 1.5mm;
+  page-break-after: always;
+}
+
+.card {
+  width: 86mm;
+  height: 54.4mm;
+  overflow: hidden;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    page-break-after: always;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="pagesContainer"></div>
+
+<script>
+const selectedTeacherIds = ${JSON.stringify(selectedTeacherIds)};
+const templateId = "${templateId}";
+const pagesContainer = document.getElementById('pagesContainer');
+
+let index = 0;
+const batchSize = 50;
+let isFetching = false;
+let cardCount = 0; // ✅ IMPORTANT FIX
+
+async function fetchNextBatch() {
+  if (index >= selectedTeacherIds.length || isFetching) return;
+  isFetching = true;
+
+  const batchIds = selectedTeacherIds.slice(index, index + batchSize);
+
+  const formData = new FormData();
+  formData.append('templateid', templateId);
+  batchIds.forEach(id => formData.append('teacherids[]', id));
+
+  try {
+    const response = await fetch('https://esyserve.top/teacher/pdf', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+
+    const result = await response.json();
+
+    let currentPage = null;
+
+    result.forEach((cardHTML) => {
+      if (cardCount % 10 === 0) {
+        currentPage = document.createElement('div');
+        currentPage.className = 'page';
+        pagesContainer.appendChild(currentPage);
       }
 
-      let html = `
-        <html>
-          <head>
-            <style>
-              .row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10mm;
-              }
-              .card {
-                width: 85.60mm;
-                height: 53.98mm;
-                box-sizing: border-box;
-              }
-            </style>
-          </head>
-          <body>
-      `;
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'card';
+      cardDiv.innerHTML = cardHTML;
 
-      for (let i = 0; i < result.length; i += 3) {
-        html += '<div class="row">';
-        for (let j = i; j < i + 3 && j < result.length; j++) {
-          html += `<div class="card">${result[j]}</div>`;
-        }
-        html += '</div>';
-      }
+      currentPage.appendChild(cardDiv);
+      cardCount++;
+    });
 
-      html += `</body></html>`;
-      document.write(html);
+    index += batchIds.length;
 
-    } catch (error) {
-      console.error(error);
-      alert('Failed to generate teacher cards.');
-    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    isFetching = false;
+  }
+}
+
+fetchNextBatch();
+
+window.addEventListener('scroll', () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    fetchNextBatch();
+  }
+});
+</script>
+
+</body>
+</html>
+    `);
+
+    win.document.close();
   });
+
 });
