@@ -1,3 +1,4 @@
+// ------------------ Fetch Templates ------------------
 (async function fetchTemplates() {
   try {
     const response = await fetch('https://esyserve.top/fetch/template', {
@@ -6,12 +7,11 @@
     });
 
     const templates = await response.json();
-
     if (!response.ok) throw new Error(templates || 'Failed to fetch templates.');
 
     const select = document.getElementById('dynamicSelect');
     templates.forEach(template => {
-      if (template.type === 'teachers') {
+      if (template.type === 'students') {
         const option = document.createElement('option');
         option.value = template.templateid;
         option.textContent = `Template #${template.templateid} - ${template.type}`;
@@ -24,7 +24,7 @@
   }
 })();
 
-
+// ------------------ On DOM Ready ------------------
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
@@ -34,55 +34,72 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  async function fetchTeachers(userid) {
+  async function fetchStudents(userid) {
     try {
-      const response = await fetch(`https://esyserve.top/fetch/teacher/${userid}`, {
+      const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
         credentials: 'include',
         method: 'GET'
       });
 
-      const teachers = await response.json();
-      if (!response.ok || !Array.isArray(teachers)) throw new Error('Failed to fetch teachers.');
+      const students = await response.json();
+      if (!response.ok || !Array.isArray(students)) {
+        throw new Error('Failed to fetch students.');
+      }
 
-      const tableBody = document.querySelector('#teacherTable tbody');
-      const container = document.getElementById('teacherResultContainer');
+      const tableBody = document.querySelector('#studentTable tbody');
+      const container = document.getElementById('studentResultContainer');
       tableBody.innerHTML = '';
 
-      teachers.forEach(teacher => {
+      students.forEach(student => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><input type="checkbox" class="teacher-checkbox" value="${teacher.teacherid}"></td>
-          <td>${teacher.teacherid || ''}</td>
-          <td>${teacher.teacher || ''}</td>
-          <td>${teacher.role || ''}</td>
-          <td><img src="assets/images/${teacher.imgteacher || ''}" alt="Teacher" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td><input type="checkbox" class="student-checkbox" value="${student.studentid}"></td>
+          <td>${student.studentid || ''}</td>
+          <td>${student.student || ''}</td>
+          <td>${student.father || ''}</td>
+          <td>${student.class || ''}</td>
+          <td>${student.sectionclass || ''}</td>
+          <td>
+            <img src="assets/images/${student.imgstudent || ''}" 
+              alt="Student" 
+              style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
+          </td>
         `;
         tableBody.appendChild(row);
       });
 
       container.style.display = 'block';
 
-      if ($.fn.DataTable.isDataTable('#teacherTable')) {
-        $('#teacherTable').DataTable().clear().destroy();
+      if ($.fn.DataTable.isDataTable('#studentTable')) {
+        $('#studentTable').DataTable().clear().destroy();
       }
-      $('#teacherTable').DataTable();
+
+      $('#studentTable').DataTable({
+        pageLength: 90,
+        lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
+      });
 
     } catch (error) {
       console.error('Fetch error:', error);
-      alert('Unable to fetch teacher data.');
+      alert('Unable to fetch student data.');
     }
   }
 
-  fetchTeachers(userid);
+  fetchStudents(userid);
 
-  document.getElementById('selectAllTeachers').addEventListener('change', function () {
-    const checkboxes = document.querySelectorAll('.teacher-checkbox');
-    checkboxes.forEach(cb => cb.checked = this.checked);
+  // ------------------ Select All ------------------
+  document.getElementById('selectAll').addEventListener('change', function () {
+    document.querySelectorAll('.student-checkbox')
+      .forEach(cb => cb.checked = this.checked);
   });
 
-  document.getElementById('sendSelectedTeachers').addEventListener('click', async () => {
-    const selectedCheckboxes = Array.from(document.querySelectorAll('.teacher-checkbox:checked'));
-    const selectedTeacherIds = selectedCheckboxes.map(cb => cb.value);
+  // ------------------ Generate Cards ------------------
+  document.getElementById('sendSelected').addEventListener('click', () => {
+
+    const selectedStudentIds = Array.from(
+      document.querySelectorAll('.student-checkbox:checked')
+    ).map(cb => cb.value);
+
     const templateId = document.getElementById('dynamicSelect').value;
 
     if (!templateId) {
@@ -90,62 +107,148 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (selectedTeacherIds.length === 0) {
-      alert('Please select at least one teacher.');
+    if (selectedStudentIds.length === 0) {
+      alert('Please select at least one student.');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('templateid', templateId);
-    selectedTeacherIds.forEach(id => formData.append('teacherids[]', id));
+    const win = window.open('', '_blank');
 
-    try {
-      const response = await fetch('https://esyserve.top/teacher/pdf', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
+    win.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cards Preview</title>
 
-      const result = await response.json(); // array of HTML card strings
-      console.log(result);
-      if (!response.ok || !Array.isArray(result)) {
-        throw new Error('Invalid response from server');
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* A4 GRID: 2 x 5 = 10 cards */
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 0.25mm;
+
+  display: grid;
+  grid-template-columns: repeat(2, 86mm);
+  grid-template-rows: repeat(5, 54.4mm);
+
+  justify-content: center;
+  align-content: center;
+
+  column-gap: 12mm;
+  row-gap: 1.5mm;
+
+  page-break-after: always;
+}
+
+.card {
+  width: 86mm;
+  height: 54.4mm;
+  overflow: hidden;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+</style>
+
+</head>
+<body>
+
+<div id="pagesContainer"></div>
+
+<script>
+const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
+const templateId = "${templateId}";
+const pagesContainer = document.getElementById('pagesContainer');
+
+let index = 0;
+const batchSize = 50;
+let isFetching = false;
+
+async function fetchNextBatch() {
+  if (index >= selectedStudentIds.length || isFetching) return;
+
+  isFetching = true;
+
+  const batchIds = selectedStudentIds.slice(index, index + batchSize);
+
+  const formData = new FormData();
+  formData.append('templateid', templateId);
+  batchIds.forEach(id => formData.append('studentids[]', id));
+
+  try {
+    const response = await fetch('https://esyserve.top/school/pdf', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+
+    const result = await response.json();
+
+    let currentPage = null;
+    let cardCount = 0;
+
+    result.forEach(cardHTML => {
+
+      if (cardCount % 10 === 0) {
+        currentPage = document.createElement('div');
+        currentPage.className = 'page';
+        pagesContainer.appendChild(currentPage);
       }
 
-      let html = `
-        <html>
-          <head>
-            <style>
-              .row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10mm;
-              }
-              .card {
-                width: 85.60mm;
-                height: 53.98mm;
-                box-sizing: border-box;
-              }
-            </style>
-          </head>
-          <body>
-      `;
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'card';
+      cardDiv.innerHTML = cardHTML;
 
-      for (let i = 0; i < result.length; i += 3) {
-        html += '<div class="row">';
-        for (let j = i; j < i + 3 && j < result.length; j++) {
-          html += `<div class="card">${result[j]}</div>`;
-        }
-        html += '</div>';
-      }
+      currentPage.appendChild(cardDiv);
 
-      html += `</body></html>`;
-      document.write(html);
+      cardCount++;
+    });
 
-    } catch (error) {
-      console.error(error);
-      alert('Failed to generate teacher cards.');
-    }
+    index += batchIds.length;
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    isFetching = false;
+  }
+}
+
+// initial load
+fetchNextBatch();
+
+// infinite scroll
+window.addEventListener('scroll', () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    fetchNextBatch();
+  }
+});
+</script>
+
+</body>
+</html>
+    `);
+
+    win.document.close();
   });
 });
-
