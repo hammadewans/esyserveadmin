@@ -147,4 +147,4 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Failed to generate teacher cards.');
     }
   });
-});bhai ye page kya krega
+});
