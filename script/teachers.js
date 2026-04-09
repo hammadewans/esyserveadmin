@@ -11,7 +11,7 @@
 
     const select = document.getElementById('dynamicSelect');
     templates.forEach(template => {
-      if (template.type === 'students') {
+      if (template.type === 'teachers') {
         const option = document.createElement('option');
         option.value = template.templateid;
         option.textContent = `Template #${template.templateid} - ${template.type}`;
@@ -26,6 +26,7 @@
 
 // ------------------ On DOM Ready ------------------
 document.addEventListener('DOMContentLoaded', function () {
+
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
 
@@ -34,35 +35,33 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  async function fetchStudents(userid) {
+  async function fetchTeachers(userid) {
     try {
-      const response = await fetch(`https://esyserve.top/fetch/student/${userid}`, {
+      const response = await fetch(`https://esyserve.top/fetch/teacher/${userid}`, {
         credentials: 'include',
         method: 'GET'
       });
 
-      const students = await response.json();
-      if (!response.ok || !Array.isArray(students)) {
-        throw new Error('Failed to fetch students.');
+      const teachers = await response.json();
+      if (!response.ok || !Array.isArray(teachers)) {
+        throw new Error('Failed to fetch teachers.');
       }
 
-      const tableBody = document.querySelector('#studentTable tbody');
-      const container = document.getElementById('studentResultContainer');
+      const tableBody = document.querySelector('#teacherTable tbody');
+      const container = document.getElementById('teacherResultContainer');
       tableBody.innerHTML = '';
 
-      students.forEach(student => {
+      teachers.forEach(teacher => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><input type="checkbox" class="student-checkbox" value="${student.studentid}"></td>
-          <td>${student.studentid || ''}</td>
-          <td>${student.student || ''}</td>
-          <td>${student.father || ''}</td>
-          <td>${student.class || ''}</td>
-          <td>${student.sectionclass || ''}</td>
+          <td><input type="checkbox" class="teacher-checkbox" value="${teacher.teacherid}"></td>
+          <td>${teacher.teacherid || ''}</td>
+          <td>${teacher.teacher || ''}</td>
+          <td>${teacher.father || ''}</td>
+          <td>${teacher.role || ''}</td>
           <td>
-            <img src="assets/images/${student.imgstudent || ''}" 
-              alt="Student" 
-              style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
+            <img src="assets/images/${teacher.imgteacher || ''}" 
+              style="height:60px;width:60px;object-fit:cover;border-radius:6px;">
           </td>
         `;
         tableBody.appendChild(row);
@@ -70,34 +69,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
       container.style.display = 'block';
 
-      if ($.fn.DataTable.isDataTable('#studentTable')) {
-        $('#studentTable').DataTable().clear().destroy();
+      if ($.fn.DataTable.isDataTable('#teacherTable')) {
+        $('#teacherTable').DataTable().clear().destroy();
       }
 
-      $('#studentTable').DataTable({
+      $('#teacherTable').DataTable({
         pageLength: 90,
         lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
       });
 
     } catch (error) {
-      console.error('Fetch error:', error);
-      alert('Unable to fetch student data.');
+      console.error(error);
+      alert('Unable to fetch teacher data.');
     }
   }
 
-  fetchStudents(userid);
+  fetchTeachers(userid);
 
   // ------------------ Select All ------------------
   document.getElementById('selectAll').addEventListener('change', function () {
-    document.querySelectorAll('.student-checkbox')
+    document.querySelectorAll('.teacher-checkbox')
       .forEach(cb => cb.checked = this.checked);
   });
 
   // ------------------ Generate Cards ------------------
   document.getElementById('sendSelected').addEventListener('click', () => {
 
-    const selectedStudentIds = Array.from(
-      document.querySelectorAll('.student-checkbox:checked')
+    const selectedTeacherIds = Array.from(
+      document.querySelectorAll('.teacher-checkbox:checked')
     ).map(cb => cb.value);
 
     const templateId = document.getElementById('dynamicSelect').value;
@@ -107,8 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    if (selectedStudentIds.length === 0) {
-      alert('Please select at least one student.');
+    if (selectedTeacherIds.length === 0) {
+      alert('Please select at least one teacher.');
       return;
     }
 
@@ -119,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Cards Preview</title>
+<title>Teacher Cards Preview</title>
 
 <style>
 * {
@@ -129,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 
 @page {
-  size: A4;
+  size: A4; /* ✅ Portrait */
   margin: 0;
 }
 
@@ -138,7 +137,7 @@ body {
   padding: 0;
 }
 
-/* A4 GRID: 2 x 5 = 10 cards */
+/* ✅ SAME AS STUDENT PORTRAIT (2x5 = 10 cards) */
 .page {
   width: 210mm;
   height: 297mm;
@@ -177,7 +176,7 @@ body {
 <div id="pagesContainer"></div>
 
 <script>
-const selectedStudentIds = ${JSON.stringify(selectedStudentIds)};
+const selectedTeacherIds = ${JSON.stringify(selectedTeacherIds)};
 const templateId = "${templateId}";
 const pagesContainer = document.getElementById('pagesContainer');
 
@@ -186,21 +185,22 @@ const batchSize = 50;
 let isFetching = false;
 
 async function fetchNextBatch() {
-  if (index >= selectedStudentIds.length || isFetching) return;
+
+  if (index >= selectedTeacherIds.length || isFetching) return;
 
   isFetching = true;
 
-  const batchIds = selectedStudentIds.slice(index, index + batchSize);
+  const batchIds = selectedTeacherIds.slice(index, index + batchSize);
 
   const formData = new FormData();
   formData.append('templateid', templateId);
-  batchIds.forEach(id => formData.append('studentids[]', id));
+  batchIds.forEach(id => formData.append('teacherids[]', id));
 
   try {
-    const response = await fetch('https://esyserve.top/school/pdf', {
+    const response = await fetch('https://esyserve.top/teacher/pdf', {
       method: 'POST',
-      body: formData,
-      credentials: 'include'
+      credentials: 'include',
+      body: formData
     });
 
     const result = await response.json();
@@ -234,10 +234,8 @@ async function fetchNextBatch() {
   }
 }
 
-// initial load
 fetchNextBatch();
 
-// infinite scroll
 window.addEventListener('scroll', () => {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
     fetchNextBatch();
