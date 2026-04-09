@@ -1,4 +1,3 @@
-// ------------------ Fetch Templates ------------------
 (async function fetchTemplates() {
   try {
     const response = await fetch('https://esyserve.top/fetch/template', {
@@ -26,9 +25,7 @@
 })();
 
 
-// ------------------ On DOM Ready ------------------
 document.addEventListener('DOMContentLoaded', function () {
-
   const params = new URLSearchParams(window.location.search);
   const userid = params.get('userid');
 
@@ -37,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return;
   }
 
-  // ------------------ Fetch Teachers ------------------
   async function fetchTeachers(userid) {
     try {
       const response = await fetch(`https://esyserve.top/fetch/teacher/${userid}`, {
@@ -46,10 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       const teachers = await response.json();
-
-      if (!response.ok || !Array.isArray(teachers)) {
-        throw new Error('Failed to fetch teachers.');
-      }
+      if (!response.ok || !Array.isArray(teachers)) throw new Error('Failed to fetch teachers.');
 
       const tableBody = document.querySelector('#teacherTable tbody');
       const container = document.getElementById('teacherResultContainer');
@@ -62,10 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <td>${teacher.teacherid || ''}</td>
           <td>${teacher.teacher || ''}</td>
           <td>${teacher.role || ''}</td>
-          <td>
-            <img src="assets/images/${teacher.imgteacher || ''}" 
-              style="height:60px;width:60px;object-fit:cover;border-radius:6px;">
-          </td>
+          <td><img src="assets/images/${teacher.imgteacher || ''}" alt="Teacher" style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
         `;
         tableBody.appendChild(row);
       });
@@ -75,11 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if ($.fn.DataTable.isDataTable('#teacherTable')) {
         $('#teacherTable').DataTable().clear().destroy();
       }
-
-      $('#teacherTable').DataTable({
-        pageLength: 90,
-        lengthMenu: [[45, 90, 180, -1], ["45", "90", "180", "All"]]
-      });
+      $('#teacherTable').DataTable();
 
     } catch (error) {
       console.error('Fetch error:', error);
@@ -89,17 +75,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchTeachers(userid);
 
-
-  // ------------------ Select All ------------------
   document.getElementById('selectAllTeachers').addEventListener('change', function () {
     const checkboxes = document.querySelectorAll('.teacher-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
   });
 
-
-  // ------------------ Generate Cards ------------------
   document.getElementById('sendSelectedTeachers').addEventListener('click', async () => {
-
     const selectedCheckboxes = Array.from(document.querySelectorAll('.teacher-checkbox:checked'));
     const selectedTeacherIds = selectedCheckboxes.map(cb => cb.value);
     const templateId = document.getElementById('dynamicSelect').value;
@@ -125,119 +106,45 @@ document.addEventListener('DOMContentLoaded', function () {
         credentials: 'include'
       });
 
-      const result = await response.json();
-
+      const result = await response.json(); // array of HTML card strings
+      console.log(result);
       if (!response.ok || !Array.isArray(result)) {
         throw new Error('Invalid response from server');
       }
 
-      // ------------------ OPEN NEW WINDOW ------------------
-      const win = window.open('', '_blank');
-
-      win.document.open();
-      win.document.write(`
+      let html = `
         <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Teacher Cards</title>
-
-          <style>
-
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-
-            html, body {
-              width: 100%;
-              height: 100%;
-            }
-
-            /* ✅ LANDSCAPE */
-            @page {
-              size: A4 landscape;
-              margin: 0;
-            }
-
-            body {
-              margin: 0;
-              padding: 0;
-            }
-
-            /* ✅ GRID: 2 COLUMN */
-            .page {
-              width: 297mm;
-              height: 210mm;
-              padding: 2mm;
-
-              display: grid;
-              grid-template-columns: repeat(2, 86mm);
-              grid-template-rows: repeat(4, 54mm);
-
-              justify-content: center;
-              align-content: center;
-
-              column-gap: 12mm;
-              row-gap: 4mm;
-
-              page-break-after: always;
-            }
-
-            .card {
-              width: 86mm;
-              height: 54mm;
-              overflow: hidden;
-            }
-
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+          <head>
+            <style>
+              .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10mm;
               }
-            }
-
-          </style>
-        </head>
-
-        <body>
-          <div id="pagesContainer"></div>
-
-          <script>
-            const result = ${JSON.stringify(result)};
-            const pagesContainer = document.getElementById('pagesContainer');
-
-            let currentPage = null;
-            let cardCount = 0;
-
-            result.forEach((cardHTML) => {
-
-              // ✅ 8 cards per page (2 x 4)
-              if (cardCount % 8 === 0) {
-                currentPage = document.createElement('div');
-                currentPage.className = 'page';
-                pagesContainer.appendChild(currentPage);
+              .card {
+                width: 85.60mm;
+                height: 53.98mm;
+                box-sizing: border-box;
               }
+            </style>
+          </head>
+          <body>
+      `;
 
-              const cardDiv = document.createElement('div');
-              cardDiv.className = 'card';
-              cardDiv.innerHTML = cardHTML;
+      for (let i = 0; i < result.length; i += 3) {
+        html += '<div class="row">';
+        for (let j = i; j < i + 3 && j < result.length; j++) {
+          html += `<div class="card">${result[j]}</div>`;
+        }
+        html += '</div>';
+      }
 
-              currentPage.appendChild(cardDiv);
-              cardCount++;
-            });
-
-          </script>
-        </body>
-        </html>
-      `);
-
-      win.document.close();
+      html += `</body></html>`;
+      document.write(html);
 
     } catch (error) {
       console.error(error);
       alert('Failed to generate teacher cards.');
     }
   });
-
-});
+});bhai ye page kya krega
