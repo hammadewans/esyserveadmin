@@ -52,17 +52,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
       teachers.forEach(teacher => {
         const row = document.createElement('tr');
+      
+        const imgSrc = teacher.imgteacher === true 
+          ? 'assets/images/yes.jpg' 
+          : 'assets/images/no.jpg';
+      
         row.innerHTML = `
           <td><input type="checkbox" class="teacher-checkbox" value="${teacher.teacherid}"></td>
           <td>${teacher.teacherid || ''}</td>
           <td>${teacher.teacher || ''}</td>
           <td>${teacher.role || ''}</td>
           <td>
-            <img src="assets/images/${teacher.imgteacher || ''}" 
-            alt="Teacher" 
-            style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
+            <img src="${imgSrc}" 
+                 alt="Teacher" 
+                 style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
           </td>
         `;
+      
         tableBody.appendChild(row);
       });
 
