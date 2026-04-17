@@ -49,17 +49,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
       students.forEach(student => {
         const row = document.createElement('tr');
+      
+        // handle boolean + string both (true / "true")
+        const imgSrc = (student.imgstudent === true || student.imgstudent === "true")
+          ? 'assets/images/yes.jpg'
+          : 'assets/images/no.jpg';
+      
         row.innerHTML = `
-          <td><input type="checkbox" class="student-checkbox" value="${student.studentid}"></td>
+          <td>
+            <input type="checkbox" class="student-checkbox" value="${student.studentid}">
+          </td>
           <td>${student.studentid || ''}</td>
           <td>${student.student || ''}</td>
           <td>${student.father || ''}</td>
           <td>${student.class || ''}</td>
           <td>${student.sectionclass || ''}</td>
-          <td><img src="assets/images/${student.imgstudent || ''}" 
-              alt="Student" 
-              style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;"></td>
+          <td>
+            <img src="${imgSrc}" 
+                 alt="Student" 
+                 style="height: 60px; width: 60px; object-fit: cover; border-radius: 6px;">
+          </td>
         `;
+      
         tableBody.appendChild(row);
       });
 
