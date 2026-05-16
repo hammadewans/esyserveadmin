@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <td><input type="checkbox" class="teacher-checkbox" value="${teacher.teacherid}"></td>
           <td>${teacher.teacherid || ''}</td>
           <td>${teacher.teacher || ''}</td>
+          <td>${teacher.father || ''}</td>
           <td>${teacher.role || ''}</td>
           <td>
             <img src="${imgSrc}" 
